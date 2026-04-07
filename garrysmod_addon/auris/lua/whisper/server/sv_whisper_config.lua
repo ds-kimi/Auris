@@ -5,7 +5,7 @@
 -- Available models: tiny, base, small, medium, large
 -- Add ".en" suffix for english-only (faster): ggml-tiny.en.bin
 -- Multilingual (auto-detect language): ggml-tiny.bin
-WHISPER_MODEL = "garrysmod/data/whisper/ggml-tiny.bin"
+WHISPER_MODEL = "garrysmod/data/whisper/ggml-tiny.en.bin"
 
 -- Local UDP port for receiving 8bit voice broadcasts
 WHISPER_PORT = 4000
@@ -32,7 +32,7 @@ WHISPER_DEBUG = false
 -- "auto" = auto-detect (multilingual models only)
 -- "en", "fr", "es", "de", "it", "pt", "ru", "ja", "zh", etc.
 -- Ignored for .en models (always english)
-WHISPER_LANGUAGE = "fr"
+WHISPER_LANGUAGE = "en"
 
 -- Apply config to the whisper module
 local function getLanguage(path)

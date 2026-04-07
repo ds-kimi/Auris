@@ -16,7 +16,21 @@ Watch Auris transcribe Garry's Mod voice chat in real time.
 - [CMake](https://cmake.org/)
 - [Vulkan SDK](https://vulkan.lunarg.com/) 1.4.341.1 or newer
 - [Visual Studio](https://visualstudio.microsoft.com/) with C++ build tools
-- whisper.cpp model file placed at `data/whisper/ggml-tiny.en.bin` (or configured in `lua/whisper/server/sv_whisper_config.lua`)
+- whisper.cpp model file (see "Models" below)
+
+## Models
+
+Download a `ggml-*.bin` Whisper model from:
+
+- https://huggingface.co/ggerganov/whisper.cpp/tree/main
+
+Place the model on your server in the Garry's Mod data folder:
+
+- `garrysmod/data/whisper/ggml-tiny.en.bin`
+
+If you want to use a different model name or path, update it in:
+
+- `garrysmod_addon/auris/lua/whisper/server/sv_whisper_config.lua`
 
 ## Building the module
 
@@ -42,4 +56,4 @@ Open the generated solution in `projects/windows/vs2022/` and build in Release.
 
 ## Configuration
 
-Edit `lua/whisper/server/sv_whisper_config.lua` to change the model path, language, thread count, and other options.
+Edit `garrysmod_addon/auris/lua/whisper/server/sv_whisper_config.lua` to change the model path, language, thread count, and other options.
