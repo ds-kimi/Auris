@@ -37,7 +37,7 @@ If you want to use a different model name or path, update it in:
 Run the setup script once from the repo root to compile shaders and patch vendor files:
 
 ```
-module\build_shaders.bat
+RUN_ONCE.bat
 ```
 
 Then generate the Visual Studio solution:
