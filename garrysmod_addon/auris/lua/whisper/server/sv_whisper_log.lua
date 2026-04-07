@@ -28,5 +28,3 @@ timer.Create("Whisper_Poll", 0.1, 0, function()
         sid, text = whisper.Poll()
     end
 end)
-
-whisper.Debug(true)
