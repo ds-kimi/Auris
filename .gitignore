@@ -1,0 +1,6 @@
+/shader_cpp
+/shader_spv
+vulkan-shaders-gen.exe
+vulkan-shaders-gen.obj
+vendor/whisper.cpp
+/projects
