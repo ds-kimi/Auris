@@ -29,3 +29,10 @@ timer.Create("Whisper::CheckVoice", 0.25, 0, function()
     end
 
 end)
+
+hook.Add("PlayerDisconnected", "Whisper::PlayerDisconnected", function(pPlayer)
+    if not IsValid(pPlayer) or not pPlayer:IsPlayer() or pPlayer:IsBot() then return end
+    if not pPlayer.bSpeaking then return end
+
+    unLoadPlayer(pPlayer)
+end)
