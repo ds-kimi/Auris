@@ -36,3 +36,8 @@ hook.Add("PlayerDisconnected", "Whisper::PlayerDisconnected", function(pPlayer)
 
     unLoadPlayer(pPlayer)
 end)
+
+local CACHE_CLEAR = 300
+timer.Create("Whisper::FlushAll", CACHE_CLEAR, 0, function()
+    whisper.FlushAll()
+end)
