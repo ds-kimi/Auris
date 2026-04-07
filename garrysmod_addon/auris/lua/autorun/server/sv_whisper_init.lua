@@ -1,6 +1,3 @@
-AddCSLuaFile("autorun/client/cl_whisper_init.lua")
-AddCSLuaFile("whisper/client/cl_whisper_voice.lua")
-
 require("eightbit")
 require("whisper")
 
