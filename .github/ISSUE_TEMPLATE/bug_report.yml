@@ -1,0 +1,76 @@
+name: Bug report
+description: Report a reproducible problem with Auris
+title: "bug: "
+labels:
+  - bug
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug.
+
+  - type: textarea
+    id: summary
+    attributes:
+      label: Summary
+      description: What happened and what you expected to happen.
+      placeholder: A concise description of the bug.
+    validations:
+      required: true
+
+  - type: textarea
+    id: repro
+    attributes:
+      label: Steps to reproduce
+      description: Provide clear, minimal steps so we can reproduce.
+      placeholder: |
+        1. ...
+        2. ...
+        3. ...
+    validations:
+      required: true
+
+  - type: textarea
+    id: logs
+    attributes:
+      label: Logs / output
+      description: Paste relevant server console output, errors, or crash logs.
+      render: text
+    validations:
+      required: false
+
+  - type: input
+    id: auris_version
+    attributes:
+      label: Auris version / commit
+      description: Git commit hash, release tag, or branch.
+      placeholder: e.g. 1a2b3c4d or v0.1.0
+    validations:
+      required: false
+
+  - type: dropdown
+    id: os
+    attributes:
+      label: OS
+      multiple: false
+      options:
+        - Windows 11
+        - Windows 10
+        - Linux
+        - Other
+    validations:
+      required: true
+
+  - type: textarea
+    id: environment
+    attributes:
+      label: Environment
+      description: Anything relevant about your build/runtime environment.
+      placeholder: |
+        - Garry's Mod branch:
+        - Vulkan SDK version:
+        - GPU:
+        - whisper.cpp model:
+        - gm_8bit version:
+    validations:
+      required: false
