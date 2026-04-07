@@ -2,6 +2,12 @@
 
 Real-time voice transcription for Garry's Mod servers. Captures player voice chat via gm_8bit, decodes Opus audio, and transcribes it using whisper.cpp. Transcriptions are written to `data/whisper/transcript.txt` and printed to the server console.
 
+## Demo Video
+
+[![Auris demo video](https://img.youtube.com/vi/se-04PY7Yls/hqdefault.jpg)](https://youtu.be/se-04PY7Yls)
+
+Watch Auris transcribe Garry's Mod voice chat in real time.
+
 ## Requirements
 
 - [gm_8bit](https://github.com/Meachamp/gm_8bit) binary module
