@@ -10,7 +10,7 @@ Watch Auris transcribe Garry's Mod voice chat in real time.
 
 ## Requirements
 
-- [gm_8bit](https://github.com/Meachamp/gm_8bit) binary module
+- [gm_8bit](https://github.com/Meachamp/gm_8bit) binary module (thanks to Meachamp for creating it)
 - Vulkan-capable GPU (NVIDIA or AMD)
 - [Git](https://git-scm.com/)
 - [CMake](https://cmake.org/)
