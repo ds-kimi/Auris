@@ -1,10 +1,43 @@
 -- Receive end-voice signal from client and flush audio
-util.AddNetworkString("whisper_end_voice")
 
-net.Receive("whisper_end_voice", function(len, ply)
-    if not IsValid(ply) then return end
-    whisper.FlushAll()
+local function unLoadPlayer(pPlayer)
+
+    whisper.Flush(pPlayer:SteamID64())
     if whisper.IsDebug() then
-        print("[Whisper] Flushing for " .. ply:Nick())
+
+        print("[Whisper] Flushing for " .. pPlayer:Nick())
+
     end
+
+end
+
+timer.Create("Whisper::CheckVoice", 0.25, 0, function()
+
+    if player.GetCount() == 0 then return end
+    
+    for _, pPlayer in player.Iterator() do
+
+        if not IsValid(pPlayer) or not pPlayer:IsPlayer() or pPlayer:IsBot() then continue end
+
+        if pPlayer:IsSpeaking() and not pPlayer.bSpeaking then
+            pPlayer.bSpeaking = true
+        elseif pPlayer.bSpeaking and not pPlayer:IsSpeaking() then
+            pPlayer.bSpeaking = nil
+            unLoadPlayer(pPlayer)
+        end
+
+    end
+
+end)
+
+hook.Add("PlayerDisconnected", "Whisper::PlayerDisconnected", function(pPlayer)
+    if not IsValid(pPlayer) or not pPlayer:IsPlayer() or pPlayer:IsBot() then return end
+    if not pPlayer.bSpeaking then return end
+
+    unLoadPlayer(pPlayer)
+end)
+
+local CACHE_CLEAR = 300
+timer.Create("Whisper::FlushAll", CACHE_CLEAR, 0, function()
+    whisper.FlushAll()
 end)
