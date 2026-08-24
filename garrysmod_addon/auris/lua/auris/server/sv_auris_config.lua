@@ -59,6 +59,9 @@ local DEFAULTS = {
     duration_ms    = 0,
     audio_ctx      = 0,
 
+    -- capture
+    preserve_timeline = false,
+
     -- remote backend
     openai_api_key = "",
     openai_model   = "whisper-1",

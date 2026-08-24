@@ -174,12 +174,19 @@ Auris.PCMToWAV(audio)
 These are exposed directly on the `auris` module table (lowercase), not on the `Auris` Lua wrapper. You only need them if you are building a custom backend or capturing audio outside the normal transcription pipeline.
 
 ```lua
--- Returns the buffered PCM for userid as a raw binary string and clears the
+-- Returns the buffered PCM for a player as a raw binary string and clears the
 -- buffer, without queuing a whisper job. Returns nil if the buffer is empty.
--- userid is the numeric GMod UserID (ply:UserID()), not a SteamID.
+-- The key is the player's AccountID (ply:AccountID()) — the low 32 bits of the
+-- SteamID64, which is what the voice detour keys its buffers by. Passing a
+-- UserID looks up an empty buffer and returns nil for every utterance.
 -- Use this to capture audio without transcribing — save to disk, forward to a
 -- custom ASR endpoint, etc.
-auris.FlushRaw(userid)
+auris.FlushRaw(accountid)
+
+-- Keeps silence in captured audio so a clip is as long as it took to speak.
+-- Off by default. See "Capturing audio on a timeline" below.
+auris.SetPreserveTimeline(bool)
+auris.PreservesTimeline()
 ```
 
 ---
@@ -207,7 +214,7 @@ Auris fires `Auris_VoiceEnd` on the server the moment a player stops speaking, b
 hook.Add("Auris_VoiceEnd", "MyAddon_SaveRaw", function(ply)
     if not IsValid(ply) then return end
 
-    local raw = auris.FlushRaw(ply:UserID())
+    local raw = auris.FlushRaw(ply:AccountID())
     if not raw then return end
 
     local dir = "auris_clips"
@@ -222,6 +229,39 @@ end)
 ```
 
 > **Note:** Returning `true` prevents transcription — `Auris.Subscribe` callbacks will not fire for that utterance. Omit the `return true` if you want both the saved file and a transcript (Auris will flush the buffer itself on the next tick, but `FlushRaw` already drained it, so transcription will be skipped regardless). If you need both, use `Auris.Subscribe` to save the audio after transcription instead.
+
+### Capturing audio on a timeline
+
+Auris captures voiced audio only. Steam's voice stream marks pauses with a silence
+opcode rather than sending samples, and a talker who goes quiet simply stops
+transmitting — so by default both are dropped and the buffer is a run of speech
+with the gaps closed up.
+
+That is the right trade for transcription, which does not care where the pauses
+were and pays for every extra sample. It is wrong for anything that plays the
+audio back against the clock it was spoken on: a sentence with breaths in it
+comes out shorter than it was spoken, and every word after a pause lands earlier
+than it happened. An eight-second sentence can arrive as two seconds of audio.
+
+Turn on timeline fidelity when you want the recording rather than the words:
+
+```lua
+-- In lua/auris/config.lua
+preserve_timeline = true,
+```
+
+```lua
+-- Or at runtime, before the utterance is spoken
+auris.SetPreserveTimeline(true)
+```
+
+With it on, silence is written back into the buffer and gaps between packets are
+padded against the clock, so `#audio / 4 / 16000` is the real duration of the
+utterance and a clip lines up with whatever else you recorded alongside it.
+
+> **Timing note:** padding happens as packets arrive, so flipping the flag
+> mid-sentence only affects what comes after it. The flag is global to the
+> server, not per player.
 
 ### Send to an HTTP endpoint
 

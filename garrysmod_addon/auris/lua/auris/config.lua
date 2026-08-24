@@ -266,6 +266,22 @@ return {
 
 
     -- =========================================================================
+    -- CAPTURE
+    -- =========================================================================
+
+    -- Keep silence in the captured audio so a clip is the same length as the
+    -- time it took to speak. Off by default: transcription does not care where
+    -- the pauses were, and dropping them keeps buffers and inference smaller.
+    -- Turn it on only when something consumes the audio itself rather than the
+    -- text — a replay system, evidence capture, anything that plays a clip back
+    -- in step with what was happening while it was recorded. With it off, a
+    -- sentence with pauses in it comes out shorter than it was spoken and every
+    -- word after a pause sits earlier than it happened.
+    -- Addons can also flip this at runtime with auris.SetPreserveTimeline(bool).
+    preserve_timeline = false,
+
+
+    -- =========================================================================
     -- REMOTE BACKEND (OpenAI)
     -- =========================================================================
 

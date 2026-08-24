@@ -90,6 +90,14 @@ function Auris.Boot()
     if not useRemote then
         auris.SetConfig(buildWhisperConfig(cfg))
     end
+
+    -- Capture fidelity is not a whisper setting: it changes what lands in the
+    -- buffer, so it applies to both backends and to anything reading the audio
+    -- with FlushRaw. Guarded so an older module binary still boots.
+    if isfunction(auris.SetPreserveTimeline) then
+        auris.SetPreserveTimeline(cfg.preserve_timeline == true)
+    end
+
     auris.Debug(cfg.debug)
 
     Auris._ready = true

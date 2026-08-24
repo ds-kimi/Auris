@@ -29,6 +29,8 @@ GMOD_MODULE_OPEN() {
     RegisterFunction(LUA, "IsDebug", Whisper_IsDebug);
     RegisterFunction(LUA, "SetConfig", Whisper_SetConfig);
     RegisterFunction(LUA, "GetConfig", Whisper_GetConfig);
+    RegisterFunction(LUA, "SetPreserveTimeline", Whisper_SetPreserveTimeline);
+    RegisterFunction(LUA, "PreservesTimeline", Whisper_PreservesTimeline);
 
     LUA->PushString("VERSION");
     LUA->PushString(AURIS_VERSION);
