@@ -16,6 +16,10 @@ struct WhisperConfig {
     int workers             = 0;     // 0 = min(4, max(1, cores / 2))
     float max_queue_seconds = 30.0f; // queued audio above this drops the oldest clips
     std::string vad_model   = "garrysmod/data/auris/ggml-silero-v6.2.0.bin"; // missing = no Silero gate
+    bool affinity           = true;  // keep workers off the srcds main-thread core
+    bool pin_main_thread    = true;  // pin the main thread to the core it runs on
+    std::string worker_cores = "";   // "2-7,10" overrides the worker CPU mask
+    bool auto_workers       = false; // tune active workers 1..workers by queue wait
 
     // --- backend (read once at Init) ---
     std::string backend         = "whisper";   // "whisper" | "onnx" (64-bit builds only)

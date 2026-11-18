@@ -14,3 +14,4 @@ extern int Whisper_SetConfig(lua_State* L);
 extern int Whisper_GetConfig(lua_State* L);
 extern int Whisper_SetPreserveTimeline(lua_State* L);
 extern int Whisper_PreservesTimeline(lua_State* L);
+extern int Whisper_GetStats(lua_State* L);

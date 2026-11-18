@@ -1,27 +1,19 @@
 // whisper_context holds only the weights and is read-only during inference, so
 // workers share it; everything mutated by a decode lives in a per-worker state.
 #include "worker_pool.h"
+#include "auris_config.h"
 #include "debug_log.h"
 #include "job_queue.h"
 #include "silero_gate.h"
-#include "thread_priority.h"
-#include "worker_job.h"
+#include "worker_loop.h"
+#include "worker_placement.h"
+#include "worker_stats.h"
+#include "worker_tuner.h"
 #include <thread>
 #include <vector>
 
-static whisper_context* g_poolCtx = nullptr;
-static bool g_poolAcft = false;
 static std::vector<WorkerSlot> g_slots;
 static std::vector<std::thread> g_threads;
-
-static void WorkerMain(WorkerSlot slot) {
-    LowerCurrentThreadPriority();
-    TranscriptJob job;
-    while (JobQueuePop(job)) {
-        if (job.audio.empty()) continue;
-        RunTranscriptionJob(g_poolCtx, slot, job, g_poolAcft);
-    }
-}
 
 static void FreeSlots() {
     for (WorkerSlot& slot : g_slots) {
@@ -31,13 +23,13 @@ static void FreeSlots() {
     g_slots.clear();
 }
 
-bool StartWorkerPool(whisper_context* ctx, int workers, bool acftModel,
-                     const std::string& vadPath) {
-    g_poolCtx = ctx;
-    g_poolAcft = acftModel;
+// whisper_init_state reserves every ggml compute buffer once; each
+// whisper_full_with_state reuses them, so no per-job model allocation remains
+static bool AllocateSlots(whisper_context* ctx, int workers, const std::string& vadPath) {
     bool useVad = SileroModelAvailable(vadPath);
     for (int i = 0; i < workers; i++) {
         WorkerSlot slot;
+        slot.index = i;
         // the ONNX backend (ctx null) keeps its decoder state per stream instead
         if (ctx) slot.state = whisper_init_state(ctx);
         if (ctx && !slot.state) {
@@ -49,18 +41,30 @@ bool StartWorkerPool(whisper_context* ctx, int workers, bool acftModel,
         if (useVad) slot.vad = InitSileroGate(vadPath);
         g_slots.push_back(slot);
     }
+    return true;
+}
+
+bool StartWorkerPool(whisper_context* ctx, int workers, bool acftModel,
+                     const std::string& vadPath) {
+    if (!AllocateSlots(ctx, workers, vadPath)) return false;
+    WhisperConfig cfg = GetWhisperConfig();
+    StatsReset(workers);
+    TunerReset(workers, cfg.auto_workers);
+    // before the threads exist, so the first mask is ready when they ask
+    ConfigurePlacement(cfg);
     JobQueueOpen();
-    for (const WorkerSlot& slot : g_slots) g_threads.emplace_back(WorkerMain, slot);
+    SetWorkerLoopRunning(true);
+    for (const WorkerSlot& slot : g_slots) g_threads.emplace_back(WorkerMain, ctx, slot, acftModel);
     WDEBUG("[Auris] %d worker thread(s) started\n", workers);
     return true;
 }
 
 void StopWorkerPool() {
+    SetWorkerLoopRunning(false);
     JobQueueClose();
     for (std::thread& t : g_threads) {
         if (t.joinable()) t.join();
     }
     g_threads.clear();
     FreeSlots();
-    g_poolCtx = nullptr;
 }

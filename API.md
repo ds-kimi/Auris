@@ -187,7 +187,29 @@ auris.FlushRaw(accountid)
 -- Off by default. See "Capturing audio on a timeline" below.
 auris.SetPreserveTimeline(bool)
 auris.PreservesTimeline()
+
+-- Read-only counters of the local transcription pool since server start.
+-- Numbers only; all zero with the remote (OpenAI) backend.
+--   jobs, dropped          clips transcribed / dropped because the queue was full
+--   cpu_ms, audio_seconds  worker-thread CPU time spent / seconds of voice received
+--   cpu_per_audio          cpu_ms / 1000 / audio_seconds (target <= 0.3 at 128 players)
+--   queue_seconds          audio waiting for a worker right now
+--   active_workers         workers taking jobs (below `workers` with auto_workers)
+--   workers[i]             { jobs, cpu_ms, audio_seconds, core } per worker;
+--                          core = CPU of its last job (-1 before the first)
+-- cpu_ms counts the worker thread itself: exact with threads = 1, partial when
+-- whisper spreads a decode over more threads.
+auris.GetStats()
 ```
+
+### Worker placement keys (`config.lua`, read once at start)
+
+| Key | Default | Effect |
+|---|---|---|
+| `affinity` | `true` | Workers never run on the srcds main-thread core; on CPUs with several L3 caches they prefer one the main thread does not use. ConVar `auris_affinity`. |
+| `pin_main_thread` | `true` | Pins the main thread to its current core so the worker mask stays valid (checked once per second). |
+| `worker_cores` | `""` | Worker CPU list (`"2-7,10"`, taskset syntax); the main-thread core is always removed. |
+| `auto_workers` | `false` | Starts with one active worker, adds one while clips wait over 1 s, removes one when waits stay under 0.1 s. |
 
 ---
 

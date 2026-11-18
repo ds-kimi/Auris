@@ -2,6 +2,7 @@
 // dropping the oldest clips keeps transcription latency bounded.
 #include "job_queue.h"
 #include "debug_log.h"
+#include "queue_stats.h"
 #include <condition_variable>
 #include <deque>
 #include <mutex>
@@ -15,8 +16,10 @@ static bool g_open = false;
 void JobQueuePush(TranscriptJob job, size_t maxSamples) {
     std::lock_guard<std::mutex> lock(g_jobMutex);
     if (!g_open) return;
+    job.queuedAt = std::chrono::steady_clock::now();
     g_queuedSamples += job.audio.size();
     g_jobs.push_back(std::move(job));
+    uint64_t dropped = 0;
     // the newest job always stays, even when it alone exceeds the budget
     while (g_jobs.size() > 1 && g_queuedSamples > maxSamples) {
         size_t dropped = g_jobs.front().audio.size();
@@ -24,7 +27,9 @@ void JobQueuePush(TranscriptJob job, size_t maxSamples) {
                dropped / 16000.0f, g_jobs.front().key);
         g_queuedSamples -= dropped;
         g_jobs.pop_front();
+        dropped++;
     }
+    QueueStatsUpdate(g_queuedSamples, dropped);
     g_jobCond.notify_one();
 }
 
@@ -35,6 +40,7 @@ bool JobQueuePop(TranscriptJob& out) {
     out = std::move(g_jobs.front());
     g_jobs.pop_front();
     g_queuedSamples -= out.audio.size();
+    QueueStatsUpdate(g_queuedSamples, 0);
     return true;
 }
 
