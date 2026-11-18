@@ -43,12 +43,15 @@ return {
     --               module prints an error and keeps whisper
     backend = "whisper",
 
-    -- ONNX model family: "moonshine" (English). "parakeet", "zipformer" and
-    -- "sensevoice" are reserved and rejected by this module version.
+    -- ONNX model family. "moonshine" (English, cheapest), "zipformer"
+    -- (English, small offline transducer) or "parakeet" (Parakeet TDT v3,
+    -- 25 European languages incl. French, ~7x Moonshine's CPU; CC-BY-4.0).
+    -- "sensevoice" is reserved and rejected by this module version.
     onnx_model_type = "moonshine",
 
-    -- Folder of the sherpa-onnx model release (encoder_model.ort,
-    -- decoder_model_merged.ort, tokens.txt for Moonshine).
+    -- Folder of the sherpa-onnx model release: encoder_model.ort,
+    -- decoder_model_merged.ort, tokens.txt for Moonshine; encoder*, decoder*,
+    -- joiner* .onnx (int8 preferred) + tokens.txt for zipformer/parakeet.
     onnx_model_dir = "garrysmod/data/auris/sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27",
 
     -- BCP-47 language code ("en", "de", "fr", "ja", …).
