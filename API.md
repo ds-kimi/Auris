@@ -225,6 +225,19 @@ auris.GetStats()
 | `worker_cores` | `""` | Worker CPU list (`"2-7,10"`, taskset syntax); the main-thread core is always removed. |
 | `auto_workers` | `false` | Starts with one active worker, adds one while clips wait over 1 s, removes one when waits stay under 0.1 s. |
 
+### Engine and throughput keys (`config.lua`, read once at start)
+
+| Key | Default | Effect |
+|---|---|---|
+| `backend` | `"whisper"` | `"whisper"` or `"onnx"` (sherpa-onnx, 64-bit module only; a 32-bit module prints an error and keeps whisper). ConVar `auris_backend`. |
+| `onnx_model_type` | `"moonshine"` | `"moonshine"`, `"zipformer"` (English) or `"parakeet"` (Parakeet TDT v3, 25 European languages, CC-BY-4.0). `"sensevoice"` is reserved and rejected. |
+| `onnx_model_dir` | Moonshine folder | Folder of the sherpa-onnx release under `garrysmod/data/auris/` (`encoder*`, `decoder*`, `joiner*`, `tokens.txt`). |
+| `vad_model` | `ggml-silero-v6.2.0.bin` path | Silero VAD: skips clips without speech and crops the rest to the spoken part. Missing file or `""` = gate off. |
+| `workers` | `0` | Parallel workers (1..8) sharing one model; `0` = half the cores, at most 4. |
+| `max_queue_seconds` | `30` | Queued audio (1..600 s) above which the oldest clips are dropped instead of letting latency grow. |
+| `dynamic_audio_ctx` | `true` | Shrinks the encoder context to the clip length on ACFT models (filename contains `acft`); ignored on stock models or when `audio_ctx` is non-zero. |
+| `greedy_best_of` | `2` | Greedy runs compared on a temperature fallback only; costs nothing on clean clips. |
+
 ---
 
 ## Working With Audio

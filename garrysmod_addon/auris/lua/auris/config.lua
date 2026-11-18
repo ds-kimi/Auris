@@ -7,14 +7,15 @@ return {
     -- CORE
     -- =========================================================================
 
-    -- Path to the Whisper GGML model binary.
-    -- Larger models = higher accuracy, higher CPU/GPU cost, longer latency.
-    --   tiny  ~75MB  — fast, good enough for short game chat
-    --   base  ~140MB — noticeably better, still real-time on most hardware
-    --   small ~460MB — good quality, needs a decent CPU or GPU
-    --   medium/large  — not recommended for live game servers
-    -- .en.bin variants are English-only but faster than the multilingual equivalents.
-    model = "garrysmod/data/auris/ggml-tiny.en.bin",
+    -- Path to the Whisper GGML model binary. Use an ACFT model (FUTO, see the
+    -- README "Models" section): Auris shrinks the encoder to the clip length on
+    -- them, which cuts CPU ~3.5x versus the same stock model.
+    --   tiny_en_acft_q8_0.bin   - weak hosts and 32-bit servers at 128 players
+    --   base_en_acft_q8_0.bin   - English default, best quality up to ~64 players
+    --   base_acft_q8_0.bin      - multilingual, French: also set language = "fr"
+    --   small_acft_q8_0.bin     - only with a GPU build or the OpenAI backend
+    -- Stock ggml-*.bin models work but cost far more CPU and drop clips at 128p.
+    model = "garrysmod/data/auris/base_en_acft_q8_0.bin",
 
     -- CPU threads per transcription worker (1..8).
     -- Many short clips scale better across workers than across threads: keep 1

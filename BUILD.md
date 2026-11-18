@@ -10,6 +10,7 @@
 - [Windows — Visual Studio](#windows--visual-studio)
 - [Linux — GNU Make](#linux--gnu-make)
 - [Output Locations](#output-locations)
+- [Benchmark (auris-bench)](#benchmark-auris-bench)
 
 ---
 
@@ -124,6 +125,24 @@ make
 cd projects/linux/make
 make config=release_x86_64
 ```
+
+---
+
+## Benchmark (`auris-bench`)
+
+`auris-bench` is a console tool built from the same whisper/ggml sources and flags as the module. It measures
+CPU-s per audio-s, latency p50/p95 and peak RSS on your own hardware, which is how to size `workers`, `threads` and the model
+before going live. It is generated with the module by premake: build the `auris-bench` project in the same
+configuration (for example `MSBuild projects/windows/vs2022/auris-bench.vcxproj -p:Configuration=Release -p:Platform=x64`,
+or `make config=release_x86_64 auris-bench` on Linux).
+
+```sh
+auris-bench -m tiny_en_acft_q8_0.bin -w clips/ -j 4 -r 3 --vad ggml-silero-v6.2.0.bin
+```
+
+Input is 16 kHz mono WAV (a file or a folder). 64-bit builds also take `--onnx <dir> --onnx-model-type zipformer`.
+See [tools/bench/README.md](tools/bench/README.md) for every flag. Reference results are in
+[docs/results/auris-perf.md](docs/results/auris-perf.md).
 
 ---
 
