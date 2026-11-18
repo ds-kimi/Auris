@@ -1,6 +1,7 @@
 // Maps WhisperConfig to whisper_full_params, plus per-clip audio_ctx sizing
 #include "whisper_params.h"
 #include "debug_log.h"
+#include "job_limits.h"
 #include <algorithm>
 
 static void FillCoreParams(const WhisperConfig& cfg, whisper_full_params& w) {
@@ -8,14 +9,16 @@ static void FillCoreParams(const WhisperConfig& cfg, whisper_full_params& w) {
     w.print_timestamps = cfg.print_timestamps;
     w.single_segment   = cfg.single_segment;
     w.no_context       = cfg.no_context;
-    w.language         = cfg.language.empty() ? nullptr : cfg.language.c_str();
+    w.language         = ResolveJobLanguage(cfg);
     w.n_threads        = cfg.n_threads;
 
     w.greedy.best_of        = cfg.greedy_best_of;
     w.beam_search.beam_size = cfg.beam_size;
 
     w.translate       = cfg.translate;
-    w.detect_language = cfg.detect_language;
+    // whisper's own detect_language only detects and returns no text; auto-detection
+    // with transcription goes through language = "auto" instead (ResolveJobLanguage)
+    w.detect_language = false;
     w.no_timestamps   = cfg.no_timestamps;
     w.print_special   = cfg.print_special;
     w.print_realtime  = cfg.print_realtime;
@@ -29,7 +32,6 @@ static void FillFilterParams(const WhisperConfig& cfg, whisper_full_params& w) {
     w.thold_ptsum      = cfg.thold_ptsum;
     w.max_len          = cfg.max_len;
     w.split_on_word    = cfg.split_on_word;
-    w.max_tokens       = cfg.max_tokens;
 
     w.suppress_blank       = cfg.suppress_blank;
     w.suppress_nst         = cfg.suppress_nst;
@@ -69,6 +71,7 @@ whisper_full_params BuildWhisperParams(const WhisperConfig& cfg, int nSamples, b
     w.offset_ms      = cfg.offset_ms;
     w.duration_ms    = cfg.duration_ms;
     w.audio_ctx      = ChooseAudioCtx(cfg, nSamples, acftModel);
-    WDEBUG("[Auris] Worker: audio_ctx %d\n", w.audio_ctx);
+    w.max_tokens     = ChooseMaxTokens(cfg, nSamples);
+    WDEBUG("[Auris] Worker: audio_ctx %d max_tokens %d\n", w.audio_ctx, w.max_tokens);
     return w;
 }

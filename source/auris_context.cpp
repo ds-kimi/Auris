@@ -9,6 +9,7 @@
 #include "whisper_params.h"
 #include <algorithm>
 #include <cctype>
+#include <chrono>
 
 static whisper_context* g_ctx = nullptr;
 static bool g_acftModel = false;
@@ -58,6 +59,7 @@ static void WorkerLoop() {
 
         StoreCachedAudio(job.key, job.audio);
 
+        auto t0 = std::chrono::steady_clock::now();
         int ret = whisper_full(
             g_ctx, wparams,
             job.audio.data(), (int)job.audio.size()
@@ -66,6 +68,13 @@ static void WorkerLoop() {
             WDEBUG("[Auris] Worker: transcription failed\n");
             continue;
         }
+
+        // whisper.cpp exposes no fallback counter, and whisper_get_timings allocates and
+        // averages per call; a real-time factor far above the usual one is the visible
+        // sign of temperature fallbacks or a token loop
+        double ms = std::chrono::duration<double, std::milli>(
+            std::chrono::steady_clock::now() - t0).count();
+        WDEBUG("[Auris] Timings: %.0f ms for %.1fs (rtf %.2f)\n", ms, dur, ms / 1000.0 / dur);
 
         int nSeg = whisper_full_n_segments(g_ctx);
         for (int i = 0; i < nSeg; i++) {

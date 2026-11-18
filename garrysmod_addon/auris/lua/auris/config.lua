@@ -24,6 +24,8 @@ return {
     -- BCP-47 language code ("en", "de", "fr", "ja", …).
     -- Ignored for .en.bin models (English is hard-coded in those weights).
     -- Set to "" and enable detect_language below for automatic detection.
+    -- "" without detect_language falls back to "en": auto-detection costs an
+    -- extra pass and guesses wrong on short noisy clips.
     language = "en",
 
     -- Prints detailed C-level debug output to the server console.
@@ -61,8 +63,9 @@ return {
     use_beam_search = false,
 
     -- Greedy only. Number of independent greedy runs to compare and pick the best.
-    -- 1 = pure greedy (fastest). 5 = default. Values above 5 rarely help.
-    greedy_best_of = 3,
+    -- Only used on temperature fallback (a failed first pass), so it costs
+    -- nothing on clean clips. 2 keeps the fallback tail short on busy servers.
+    greedy_best_of = 2,
 
     -- Beam search only. Width of the search tree.
     -- Higher = better quality but memory and time grow roughly exponentially.
@@ -139,8 +142,8 @@ return {
     -- Hard limit on tokens per segment (0 = no limit).
     -- Forces a segment break after this many tokens regardless of content.
     -- Low values will cut off mid-word; use max_len + split_on_word instead.
-    -- 0 = no limit. Non-zero forces a segment break mid-utterance which silently
-    -- drops any tokens past the cut when single_segment = true.
+    -- Auris also scales the budget to the clip (8 + 6 per second) so a
+    -- hallucination loop cannot run long; this value is the cap (0 = cap 96).
     max_tokens = 96,
 
 
