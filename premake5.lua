@@ -198,6 +198,8 @@ CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" 
 			"source/whisper_params.cpp",
 			"source/onnx_backend.cpp",
 			"source/onnx_model_paths.cpp",
+			"source/onnx_file_find.cpp",
+			"source/onnx_recognizer_config.cpp",
 		})
 		AddWhisperCore()
 		AddOnnx()

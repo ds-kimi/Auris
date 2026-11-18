@@ -10,6 +10,8 @@
 static WhisperConfig BenchConfig(const BenchOptions& opts) {
     WhisperConfig cfg;
     cfg.language = opts.language;
+    // config.lua ships no_context = true; without it one clip prompts the next
+    cfg.no_context = true;
     cfg.n_threads = opts.threads;
     cfg.dynamic_audio_ctx = opts.dynamicCtx;
     return cfg;

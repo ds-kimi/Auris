@@ -3,9 +3,9 @@
 #include "onnx_backend.h"
 #ifdef AURIS_WITH_ONNX
 #include "onnx_model_paths.h"
+#include "onnx_recognizer_config.h"
 #include "sherpa-onnx/c-api/c-api.h"
 #include <cstdio>
-#include <cstring>
 
 static const SherpaOnnxOfflineRecognizer* g_recognizer = nullptr;
 
@@ -15,15 +15,7 @@ bool OnnxInit(const WhisperConfig& cfg) {
     if (!ResolveOnnxModelPaths(cfg, paths)) return false;
 
     SherpaOnnxOfflineRecognizerConfig rc;
-    memset(&rc, 0, sizeof(rc));
-    rc.feat_config.sample_rate = 16000;
-    rc.feat_config.feature_dim = 80;
-    rc.model_config.moonshine.encoder = paths.encoder.c_str();
-    rc.model_config.moonshine.merged_decoder = paths.decoder.c_str();
-    rc.model_config.tokens = paths.tokens.c_str();
-    rc.model_config.num_threads = cfg.n_threads;
-    rc.model_config.provider = "cpu";
-    rc.decoding_method = "greedy_search";
+    FillRecognizerConfig(cfg, paths, rc);
 
     // the recognizer copies every path, so paths may die after this call
     g_recognizer = SherpaOnnxCreateOfflineRecognizer(&rc);

@@ -7,6 +7,7 @@
 struct OnnxModelPaths {
     std::string encoder;
     std::string decoder;
+    std::string joiner;          // transducers only (parakeet, zipformer)
     std::string tokens;
 };
 

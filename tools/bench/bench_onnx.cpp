@@ -19,7 +19,7 @@ static ClipResult RunOnnxClip(const BenchClip& clip) {
 std::vector<ClipResult> RunOnnxBench(const BenchOptions& opts, const std::vector<BenchClip>& clips) {
     WhisperConfig cfg;
     cfg.n_threads = opts.threads;
-    cfg.onnx_model_type = "moonshine";
+    cfg.onnx_model_type = opts.onnxType;
     cfg.onnx_model_dir = opts.onnxDir;
     std::vector<ClipResult> results;
     if (!OnnxInit(cfg)) return results;

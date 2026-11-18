@@ -16,6 +16,7 @@ static bool ApplyArg(const char* key, const char* val, BenchOptions& o) {
     else if (strcmp(key, "-l") == 0) o.language = val;
     else if (strcmp(key, "--vad") == 0) o.vadModel = val;
     else if (strcmp(key, "--onnx") == 0) o.onnxDir = val;
+    else if (strcmp(key, "--onnx-model-type") == 0) o.onnxType = val;
     else if (strcmp(key, "-j") == 0) o.workers = std::min(64, std::max(1, atoi(val)));
     else if (strcmp(key, "-t") == 0) o.threads = std::min(8, std::max(1, atoi(val)));
     else if (strcmp(key, "-r") == 0) o.repeat = std::min(1000, std::max(1, atoi(val)));
