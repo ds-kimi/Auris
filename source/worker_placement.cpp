@@ -35,8 +35,8 @@ void RefreshPlacement() {
     int core = CurrentCore();
     if (core < 0 || core == g_mainCore) return;
     g_mainCore = core;
-    if (g_pinMain) SetCurrentThreadMask(1ull << core);
     uint64_t mask = PickWorkerMask(GetCpuTopology(), core, g_override);
+    if (g_pinMain) SetCurrentThreadMask(1ull << core);
     g_workerMask.store(mask);
     g_generation.fetch_add(1);
     printf("[Auris] Placement: main thread on core %d, worker mask 0x%llx\n",

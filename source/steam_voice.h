@@ -6,7 +6,8 @@
 bool InitSteamVoiceDecoder();
 void ShutdownSteamVoiceDecoder();
 
-// Decode a raw steam voice UDP packet to 16kHz float PCM
-std::vector<float> DecodeSteamVoice(
+// Decode a raw steam voice UDP packet to 16kHz float PCM, through the opus
+// stream of speaker `key` (the voice buffer key)
+std::vector<float> DecodeSteamVoice(int key,
     const uint8_t* data, int len
 );

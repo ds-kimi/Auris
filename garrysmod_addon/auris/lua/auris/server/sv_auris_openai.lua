@@ -51,18 +51,20 @@ end
 ---@param sid string
 ---@param text string
 ---@param audio string raw PCM binary
-local function dispatch(sid, text, audio)
-    local ply = Auris.GetPlayerBySID64(sid)
+---@param key integer voice buffer key (negative = entity index, sv_lan)
+local function dispatch(sid, text, audio, key)
+    local ply = Auris.PlayerForResult(sid, key)
     hook.Run("Auris_Transcription", ply, sid, text, audio)
 end
 
 ---@param ply Player
 function Auris.SubmitRemote(ply)
-    local pcm = auris.FlushRaw(ply:AccountID())
+    local pcm = auris.FlushRaw(Auris.VoiceKey(ply))
     if not pcm then return end
 
     local cfg    = Auris._config
     local sid    = ply:SteamID64()
+    local key    = Auris.VoiceKey(ply)
     local wav    = Auris.PCMToWAV(pcm)
     local body, contentType = buildMultipart(cfg.openai_model, wav, cfg.initial_prompt)
 ---@diagnostic disable: param-type-mismatch, missing-fields
@@ -82,7 +84,7 @@ function Auris.SubmitRemote(ply)
                 ErrorNoHalt("[Auris] OpenAI response missing 'text' field\n")
                 return
             end
-            dispatch(sid, text, pcm)
+            dispatch(sid, text, pcm, key)
         end,
         failed = function(reason)
             ErrorNoHalt("[Auris] OpenAI request failed: " .. tostring(reason) .. "\n")

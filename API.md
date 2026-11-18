@@ -167,6 +167,14 @@ Auris.VERSION  -- e.g. "1.0.0"
 -- or an HTTP multipart body. Format: 16 kHz, mono, 32-bit IEEE 754 float PCM.
 -- Always guard the input: if audio then Auris.PCMToWAV(audio) end
 Auris.PCMToWAV(audio)
+
+-- Voice buffer key of a player, for auris.FlushRaw: AccountID(), or -EntIndex()
+-- on sv_lan servers where every client has SteamID64 "0" and AccountID() is -1.
+Auris.VoiceKey(ply)
+
+-- Player behind a result: by SteamID64, or by entity index for sv_lan clients
+-- (sid "0", negative key). nil when the player left.
+Auris.PlayerForResult(steamid64, key)
 ```
 
 ### Low-level module functions
@@ -176,12 +184,13 @@ These are exposed directly on the `auris` module table (lowercase), not on the `
 ```lua
 -- Returns the buffered PCM for a player as a raw binary string and clears the
 -- buffer, without queuing a whisper job. Returns nil if the buffer is empty.
--- The key is the player's AccountID (ply:AccountID()) — the low 32 bits of the
--- SteamID64, which is what the voice detour keys its buffers by. Passing a
--- UserID looks up an empty buffer and returns nil for every utterance.
+-- The key is Auris.VoiceKey(ply): the AccountID (low 32 bits of the SteamID64,
+-- what the voice detour keys its buffers by), or -EntIndex() for clients
+-- without a SteamID (sv_lan). Passing a UserID looks up an empty buffer and
+-- returns nil for every utterance.
 -- Use this to capture audio without transcribing — save to disk, forward to a
 -- custom ASR endpoint, etc.
-auris.FlushRaw(accountid)
+auris.FlushRaw(key)
 
 -- Keeps silence in captured audio so a clip is as long as it took to speak.
 -- Off by default. See "Capturing audio on a timeline" below.
@@ -200,6 +209,11 @@ auris.PreservesTimeline()
 -- cpu_ms counts the worker thread itself: exact with threads = 1, partial when
 -- whisper spreads a decode over more threads.
 auris.GetStats()
+
+-- Next transcription result, nothing when the queue is empty. Auris polls it
+-- itself; only a custom delivery loop needs it. key (4th value) is the voice
+-- buffer key, the only way to tell sv_lan speakers apart (sid64 is "0").
+-- sid64, text, audio, key = auris.Poll()
 ```
 
 ### Worker placement keys (`config.lua`, read once at start)
@@ -236,7 +250,7 @@ Auris fires `Auris_VoiceEnd` on the server the moment a player stops speaking, b
 hook.Add("Auris_VoiceEnd", "MyAddon_SaveRaw", function(ply)
     if not IsValid(ply) then return end
 
-    local raw = auris.FlushRaw(ply:AccountID())
+    local raw = auris.FlushRaw(Auris.VoiceKey(ply))
     if not raw then return end
 
     local dir = "auris_clips"
