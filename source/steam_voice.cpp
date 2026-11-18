@@ -2,7 +2,6 @@
 #include "steam_voice.h"
 #include "opus_stream.h"
 #include "debug_log.h"
-#include "resampler.h"
 #include "capture_mode.h"
 #include <cstring>
 
@@ -12,10 +11,11 @@ enum {
     OP_SAMPLERATE = 11
 };
 
-// Everything downstream assumes the stream is the 24 kHz opus steam voice uses,
-// including the fixed 2/3 resampling ratio. A stream at any other rate would
-// come out at the wrong speed, so say so rather than producing it silently.
+// Steam voice is encoded at 24 kHz. Opus decodes it at 16 kHz regardless, but
+// silence counts arrive at the encoder rate and are scaled by this ratio, so a
+// stream at any other rate would pad pauses wrongly: say so.
 static const uint16_t EXPECTED_RATE = 24000;
+static const int OUTPUT_RATE = 16000;
 
 bool InitSteamVoiceDecoder() {
     return OpusStreamInit();
@@ -54,7 +54,7 @@ std::vector<float> DecodeSteamVoice(
             p += sizeof(uint16_t);
 
             if (PreserveTimeline()) {
-                result.insert(result.end(), (size_t)silent * RS_L / RS_M, 0.0f);
+                result.insert(result.end(), (size_t)silent * OUTPUT_RATE / EXPECTED_RATE, 0.0f);
             }
             break;
         }
