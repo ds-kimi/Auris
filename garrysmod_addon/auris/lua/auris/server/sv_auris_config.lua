@@ -3,7 +3,7 @@
 
 local DEFAULTS = {
     -- core
-    model            = "data/auris/ggml-tiny.en.bin",
+    model            = "data/auris/base_en_acft_q8_0.bin",
     port             = 4000,
     threads          = 1,
     workers          = 0,

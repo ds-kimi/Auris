@@ -32,6 +32,43 @@ Watch Auris transcribe Garry's Mod voice chat in real time.
 
 ---
 
+## Performance
+
+Auris keeps up with a full 128-player server on CPU only. Numbers below are from a real in-game
+run: srcds lin64 in WSL2 on a Ryzen 7 7800X3D (16 logical CPUs), 128 gm_realbots
+bots playing real speech through the Steam voice path, ~20 % talk time (~30 audio-seconds per second),
+4 workers, Silero VAD on. The bots run inside srcds, so tick and RSS figures are pessimistic.
+RSS is the whole srcds process, bots included. 128 talkers, corpus and method: [docs/results/auris-perf.md](docs/results/auris-perf.md).
+
+**English**
+
+| Model / backend | Workers x threads | CPU-s per audio-s | Latency p95 | Dropped clips | WER | RSS | Builds |
+|---|---|---|---|---|---|---|---|
+| **sherpa-onnx Zipformer small** *(64-bit default)* | 4 x 1 | 0.012 | 0.20 s | 0 / 606 | 6.2 % | 1.6 GB | 64-bit |
+| sherpa-onnx Moonshine tiny | 4 x 1 | 0.016 | 0.23 s | 0 / 606 | 6.3 % | 1.4 GB | 64-bit |
+| **whisper `tiny_en_acft_q8_0`** *(32-bit default)* | 4 x 1 | 0.063 | 0.97 s | 0 / 606 | 9.2 % | 1.7 GB | 32 + 64-bit |
+| whisper `base_en_acft_q8_0` | 4 x 2 | 0.088 | 1.5 s | 3 / 606 | 11.9 % | 1.5 GB | 32 + 64-bit |
+| whisper stock `ggml-tiny.en` *(old default)* | 4 x 1 | 0.226 | 49.8 s | 179 / 606 | 24.7 % | 1.7 GB | 32 + 64-bit |
+
+**French**
+
+| Model / backend | Workers x threads | CPU-s per audio-s | Latency p95 | Dropped clips | WER | RSS | Builds |
+|---|---|---|---|---|---|---|---|
+| **whisper `base_acft_q8_0`, `language = "fr"`** *(default)* | 4 x 1 | 0.074 | 0.65 s | 3 / 560 | 11.0 % | 1.7 GB | 32 + 64-bit |
+| sherpa-onnx Parakeet TDT v3 int8 | 4 x 1 | 0.115 | 18.1 s | 21 / 560 | 16.2 % | 2.5 GB | 64-bit |
+
+Before and after at 128 talkers, same clips and load (old default = Auris before this work with the
+stock Whisper model, new default = ACFT model + worker pool + VAD):
+
+- **English**: p95 latency 60.8 s to 0.97 s (~63x), 51 % of clips lost to none, Auris CPU ~1.9x lower
+  while transcribing twice as many clips, WER 11.2 % to 9.2 %. With Zipformer: ~9x less CPU, WER 6.2 %.
+- **French**: p95 latency 72 s to 0.65 s, 213 of 557 clips answered to 557, WER 20.9 % to 11.0 %.
+
+Auris adds about 0.5 ms per tick on the main thread at 128 talkers. WER comes from a few dozen
+utterances, so treat it as indicative.
+
+---
+
 ## Requirements
 
 - [Git](https://git-scm.com/)
@@ -43,15 +80,63 @@ Watch Auris transcribe Garry's Mod voice chat in real time.
 
 ## Models
 
-Download a `ggml-*.bin` Whisper model from:
+Pick the model for your language and CPU. All figures are measured at 128 talkers, see [Performance](#performance).
 
-- https://huggingface.co/ggerganov/whisper.cpp/tree/main
+| Server | English | French / other languages |
+|---|---|---|
+| 64-bit, any size | `backend = "onnx"` + Zipformer small (or Moonshine tiny) | whisper `base_acft_q8_0` + `language = "fr"` |
+| 32-bit | whisper `tiny_en_acft_q8_0` | whisper `base_acft_q8_0` + `language = "fr"` (budget 2x the CPU of 64-bit) |
+| 64 players or fewer, best quality | whisper `base_en_acft_q8_0` | `base_acft_q8_0` |
+| With a GPU build or the OpenAI backend | whisper `small_acft_q8_0` | same |
 
-Place the model on your server in the Garry's Mod data folder:
+### Whisper (every build)
 
-- `garrysmod/data/auris/ggml-tiny.en.bin`
+Use the **ACFT** models from [FUTO](https://voiceinput.futo.org/): they are fine-tuned to work with a shortened
+audio context, so Auris shrinks the encoder to the clip length (`dynamic_audio_ctx`) and the cost drops 3.5x on
+short voice clips. Stock models gain nothing from it, so the context is only shortened when the filename contains `acft`.
 
-> **Upgrading from a previous release?** Move your model file from `data/whisper/` to `data/auris/`.
+- `https://voiceinput.futo.org/VoiceInput/tiny_en_acft_q8_0.bin` (weak hosts, 32-bit)
+- `https://voiceinput.futo.org/VoiceInput/base_en_acft_q8_0.bin` (English default)
+- `https://voiceinput.futo.org/VoiceInput/base_acft_q8_0.bin` (multilingual, French: set `language = "fr"`)
+- `https://voiceinput.futo.org/VoiceInput/small_acft_q8_0.bin` (only with a GPU build or the OpenAI backend)
+
+Place the file in `garrysmod/data/auris/`. Plain `ggml-*.bin` models from
+[ggerganov/whisper.cpp](https://huggingface.co/ggerganov/whisper.cpp/tree/main) still work but cost far more CPU.
+
+> **Upgrading from a previous release?** Move your model file from `data/whisper/` to `data/auris/`, and
+> set `model` in `config.lua` if you keep a different filename (the default is now `base_en_acft_q8_0.bin`).
+
+### Voice activity detection (Silero)
+
+Download [`ggml-silero-v6.2.0.bin`](https://huggingface.co/ggml-org/whisper-vad/blob/main/ggml-silero-v6.2.0.bin)
+into `garrysmod/data/auris/`. Clips with no speech are skipped and the rest are cropped to the spoken part, which
+saves CPU on open mics and breathing. If the file is missing the gate is off. Keep it on.
+
+### ONNX (64-bit module only)
+
+Set `backend = "onnx"`, `onnx_model_type` and `onnx_model_dir`. Models come from the
+[sherpa-onnx ASR releases](https://github.com/k2-fsa/sherpa-onnx/releases/tag/asr-models) (drop the extracted folder in `garrysmod/data/auris/`):
+
+| `onnx_model_type` | Model | Languages | Notes |
+|---|---|---|---|
+| `zipformer` | `sherpa-onnx-zipformer-small-en-2023-06-26` | English | cheapest and most accurate here, upper case without punctuation |
+| `moonshine` | `sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27` | English | loops on clips around 1 s |
+| `parakeet` | `sherpa-onnx-nemo-parakeet-tdt-0.6b-v3-int8` | 25 European languages incl. French | punctuation, 1.5x the CPU and RAM of whisper base |
+
+NVIDIA Parakeet TDT v3 is licensed [CC-BY-4.0](https://creativecommons.org/licenses/by/4.0/); keep the attribution
+if you redistribute it. A 32-bit module prints an error and keeps whisper.
+
+### 128-player capacity
+
+These are estimates from the table above, not guarantees. 128 players at ~20 % talk time is ~30 audio-s/s, so the
+workers must cover talk rate x CPU-s per audio-s with headroom:
+
+- Zipformer or Moonshine need about half a core, `tiny_en_acft` about 2, `base_acft` (FR) about 2 to 3, `base_en_acft` about 4 (use 4 workers x 2 threads), Parakeet about 3.5.
+- Prefer more workers over more threads per worker: short clips scale better that way. Keep `workers x threads` below your
+  physical cores so the game tick keeps its own core. `workers = 0` picks half the cores, at most 4.
+- `max_queue_seconds = 30` drops the oldest clips instead of letting latency grow. `affinity = true` keeps workers off the
+  main-thread core; `auto_workers = true` lets the pool grow and shrink with the queue.
+- On a saturated host use a smaller model, an ONNX backend, a GPU build, or the OpenAI backend (no local compute).
 
 If you want to use a different model name or path, update it in:
 
