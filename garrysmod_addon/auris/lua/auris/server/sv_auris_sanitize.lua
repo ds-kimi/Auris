@@ -27,7 +27,32 @@ local function resolveVadModel(path)
     return path
 end
 
+-- Backend names select C++ code paths: anything off the list falls back to
+-- the default rather than reaching the module as an unknown string.
+---@param val any
+---@param allowed table<string, boolean>
+---@param default string
+---@return string
+local function resolveChoice(val, allowed, default)
+    if isstring(val) and allowed[val] then return val end
+    return default
+end
+
+-- The directory is joined with fixed file names and opened by ONNX Runtime:
+-- same plain-relative-path rule as the VAD model, without the extension.
+---@param path any
+---@param default string
+---@return string
+local function resolveModelDir(path, default)
+    if not isstring(path) or #path == 0 or #path > 260 then return default end
+    if not string.match(path, "^[%w_%-%./]+$") then return default end
+    if string.find(path, "..", 1, true) then return default end
+    return path
+end
+
 Auris._sanitize = {
     clampNumber = clampNumber,
     resolveVadModel = resolveVadModel,
+    resolveChoice = resolveChoice,
+    resolveModelDir = resolveModelDir,
 }

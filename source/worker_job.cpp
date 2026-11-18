@@ -1,22 +1,11 @@
-// One job end to end: silence gate, whisper_full_with_state, segment collection
+// One job end to end: silence gate, decode on the pool's backend, result push
 #include "worker_job.h"
-#include "audio_cache.h"
 #include "debug_log.h"
+#include "job_gate.h"
+#include "onnx_backend.h"
 #include "result_queue.h"
-#include "silero_gate.h"
-#include "vad.h"
 #include "whisper_params.h"
 #include <chrono>
-
-// Skips chunks whose trailing 1 s is as loud as the average, which covers both
-// pure-silence buffers and continuous-noise buffers that would otherwise trigger
-// whisper.cpp hallucinations ("Thanks for watching", "[Music]", etc.).
-// vad_thold <= 0 disables the gate entirely.
-static bool PassesVad(const WhisperConfig& cfg, const std::vector<float>& audio) {
-    if (cfg.vad_thold <= 0.0f) return true;
-    std::vector<float> vadCopy = audio;
-    return auris::vad_simple(vadCopy, 16000, 1000, cfg.vad_thold, cfg.freq_thold, false);
-}
 
 static void CollectSegments(whisper_state* state, int key) {
     int nSeg = whisper_full_n_segments_from_state(state);
@@ -28,19 +17,21 @@ static void CollectSegments(whisper_state* state, int key) {
     }
 }
 
-// The energy gate runs first: it is far cheaper than the Silero LSTM
-static bool GateAudio(const WhisperConfig& cfg, const WorkerSlot& slot,
-                      TranscriptJob& job, float dur) {
-    if (!PassesVad(cfg, job.audio)) {
-        WDEBUG("[Auris] VAD: silence, skipping %.1fs chunk\n", dur);
-        return false;
-    }
-    // the cache keeps the uncropped clip: it is what the player actually said
-    StoreCachedAudio(job.key, job.audio);
-    if (slot.vad && !SileroCropToSpeech(slot.vad, job.audio)) {
-        WDEBUG("[Auris] Silero: no speech, skipping %.1fs chunk\n", dur);
-        return false;
-    }
+static bool RunWhisper(whisper_context* ctx, const WorkerSlot& slot, TranscriptJob& job,
+                       const WhisperConfig& cfg, bool acftModel) {
+    int n = (int)job.audio.size();
+    whisper_full_params wparams = BuildWhisperParams(cfg, n, acftModel);
+    if (whisper_full_with_state(ctx, slot.state, wparams, job.audio.data(), n) != 0) return false;
+    CollectSegments(slot.state, job.key);
+    return true;
+}
+
+static bool RunOnnx(TranscriptJob& job) {
+    std::string text;
+    if (!OnnxTranscribe(job.audio, text)) return false;
+    if (text.empty()) return true;
+    WDEBUG("[Auris] Result: %s\n", text.c_str());
+    PushResult({job.key, text});
     return true;
 }
 
@@ -50,21 +41,18 @@ void RunTranscriptionJob(whisper_context* ctx, const WorkerSlot& slot,
     WDEBUG("[Auris] Worker: transcribing %.1fs\n", dur);
 
     WhisperConfig cfg = GetWhisperConfig();
-    if (!GateAudio(cfg, slot, job, dur)) return;
+    if (!GateJobAudio(cfg, slot, job, dur)) return;
 
-    int n = (int)job.audio.size();
-    whisper_full_params wparams = BuildWhisperParams(cfg, n, acftModel);
     auto t0 = std::chrono::steady_clock::now();
-    if (whisper_full_with_state(ctx, slot.state, wparams, job.audio.data(), n) != 0) {
+    bool ok = ctx ? RunWhisper(ctx, slot, job, cfg, acftModel) : RunOnnx(job);
+    if (!ok) {
         WDEBUG("[Auris] Worker: transcription failed\n");
         return;
     }
-    // whisper.cpp exposes no fallback counter, and whisper_get_timings allocates and
-    // averages per call; a real-time factor far above the usual one is the visible
-    // sign of temperature fallbacks or a token loop
+    // whisper.cpp exposes no fallback counter; a real-time factor far above the
+    // usual one is the visible sign of temperature fallbacks or a token loop
     double ms = std::chrono::duration<double, std::milli>(
         std::chrono::steady_clock::now() - t0).count();
-    float run = (float)n / 16000.0f;
+    float run = (float)job.audio.size() / 16000.0f;
     WDEBUG("[Auris] Timings: %.0f ms for %.1fs (rtf %.2f)\n", ms, run, ms / 1000.0 / run);
-    CollectSegments(slot.state, job.key);
 }

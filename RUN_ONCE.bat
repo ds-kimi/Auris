@@ -69,6 +69,11 @@ git submodule update --init --recursive
 if errorlevel 1 ( echo ERROR: garrysmod_common submodules failed & popd & exit /b 1 )
 popd
 
+:: 64-bit builds link sherpa-onnx (ONNX backend); 32-bit builds never use it
+echo [sherpa-onnx] Fetching pinned static libs...
+powershell -NoProfile -ExecutionPolicy Bypass -File "%MODULE_DIR%tools\setup\fetch_sherpa_onnx.ps1"
+if errorlevel 1 ( echo ERROR: sherpa-onnx fetch failed & exit /b 1 )
+
 :: ── [4/8] Build whisper.cpp ───────────────────────────────────
 :: Patch quants.c — _pdep_u64 is x86_64-only; 32-bit builds must use the scalar fallback.
 set QUANTS_C=%VENDOR_WHISPER_DIR%\ggml\src\ggml-cpu\arch\x86\quants.c

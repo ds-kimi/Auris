@@ -5,3 +5,4 @@ vulkan-shaders-gen.obj
 vendor/whisper.cpp
 /projects
 /models
+vendor/sherpa-onnx

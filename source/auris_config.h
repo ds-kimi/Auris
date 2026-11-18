@@ -17,6 +17,11 @@ struct WhisperConfig {
     float max_queue_seconds = 30.0f; // queued audio above this drops the oldest clips
     std::string vad_model   = "garrysmod/data/auris/ggml-silero-v6.2.0.bin"; // missing = no Silero gate
 
+    // --- backend (read once at Init) ---
+    std::string backend         = "whisper";   // "whisper" | "onnx" (64-bit builds only)
+    std::string onnx_model_type = "moonshine"; // moonshine | parakeet | zipformer | sensevoice
+    std::string onnx_model_dir  = "garrysmod/data/auris/sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27";
+
     // --- sampling ---
     bool use_beam_search  = false;
     int greedy_best_of    = 2;

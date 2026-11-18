@@ -13,6 +13,13 @@ end
 
 local clampNumber = Auris._sanitize.clampNumber
 local resolveVadModel = Auris._sanitize.resolveVadModel
+local resolveChoice = Auris._sanitize.resolveChoice
+local resolveModelDir = Auris._sanitize.resolveModelDir
+
+local BACKENDS = { whisper = true, onnx = true }
+-- J1 wires Moonshine only; the module rejects the others with a clear error
+local ONNX_MODEL_TYPES = { moonshine = true, parakeet = true, zipformer = true, sensevoice = true }
+local DEFAULT_ONNX_DIR = "garrysmod/data/auris/sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27"
 
 ---@param cfg table
 ---@return table
@@ -24,6 +31,9 @@ local function buildWhisperConfig(cfg)
         workers          = math.floor(clampNumber(cfg.workers, 0, 8, 0)),
         max_queue_seconds = clampNumber(cfg.max_queue_seconds, 1, 600, 30),
         vad_model        = resolveVadModel(cfg.vad_model),
+        backend          = resolveChoice(cfg.backend, BACKENDS, "whisper"),
+        onnx_model_type  = resolveChoice(cfg.onnx_model_type, ONNX_MODEL_TYPES, "moonshine"),
+        onnx_model_dir   = resolveModelDir(cfg.onnx_model_dir, DEFAULT_ONNX_DIR),
         print_progress   = cfg.print_progress,
         print_timestamps = cfg.print_timestamps,
         single_segment   = cfg.single_segment,

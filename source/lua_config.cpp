@@ -49,6 +49,9 @@ LUA_FUNCTION(Whisper_SetConfig) {
     cfg.workers           = GetIntField(  LUA, "workers",           cfg.workers);
     cfg.max_queue_seconds = GetFloatField(LUA, "max_queue_seconds", cfg.max_queue_seconds);
     cfg.vad_model         = GetStrField(  LUA, "vad_model",         cfg.vad_model.c_str());
+    cfg.backend           = GetStrField(  LUA, "backend",           cfg.backend.c_str());
+    cfg.onnx_model_type   = GetStrField(  LUA, "onnx_model_type",   cfg.onnx_model_type.c_str());
+    cfg.onnx_model_dir    = GetStrField(  LUA, "onnx_model_dir",    cfg.onnx_model_dir.c_str());
 
     // sampling
     cfg.use_beam_search  = GetBoolField(LUA, "use_beam_search",  cfg.use_beam_search);
@@ -117,6 +120,9 @@ LUA_FUNCTION(Whisper_GetConfig) {
     LUA->PushNumber(cfg.workers);           LUA->SetField(-2, "workers");
     LUA->PushNumber(cfg.max_queue_seconds); LUA->SetField(-2, "max_queue_seconds");
     LUA->PushString(cfg.vad_model.c_str()); LUA->SetField(-2, "vad_model");
+    LUA->PushString(cfg.backend.c_str());         LUA->SetField(-2, "backend");
+    LUA->PushString(cfg.onnx_model_type.c_str()); LUA->SetField(-2, "onnx_model_type");
+    LUA->PushString(cfg.onnx_model_dir.c_str());  LUA->SetField(-2, "onnx_model_dir");
 
     // sampling
     LUA->PushBool(cfg.use_beam_search);  LUA->SetField(-2, "use_beam_search");
