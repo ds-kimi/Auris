@@ -68,6 +68,7 @@ local function buildWhisperConfig(cfg)
         offset_ms      = cfg.offset_ms,
         duration_ms    = cfg.duration_ms,
         audio_ctx      = cfg.audio_ctx,
+        dynamic_audio_ctx = cfg.dynamic_audio_ctx == true,
     }
 end
 

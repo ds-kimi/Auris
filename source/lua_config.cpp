@@ -92,6 +92,7 @@ LUA_FUNCTION(Whisper_SetConfig) {
     cfg.offset_ms      = GetIntField(LUA, "offset_ms",      cfg.offset_ms);
     cfg.duration_ms    = GetIntField(LUA, "duration_ms",    cfg.duration_ms);
     cfg.audio_ctx      = GetIntField(LUA, "audio_ctx",      cfg.audio_ctx);
+    cfg.dynamic_audio_ctx = GetBoolField(LUA, "dynamic_audio_ctx", cfg.dynamic_audio_ctx);
 
     LUA->Pop();
     SetWhisperConfig(cfg);
@@ -156,6 +157,7 @@ LUA_FUNCTION(Whisper_GetConfig) {
     LUA->PushNumber(cfg.offset_ms);      LUA->SetField(-2, "offset_ms");
     LUA->PushNumber(cfg.duration_ms);    LUA->SetField(-2, "duration_ms");
     LUA->PushNumber(cfg.audio_ctx);      LUA->SetField(-2, "audio_ctx");
+    LUA->PushBool(cfg.dynamic_audio_ctx); LUA->SetField(-2, "dynamic_audio_ctx");
 
     return 1;
 }
