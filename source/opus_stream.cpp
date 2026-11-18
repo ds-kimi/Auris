@@ -4,7 +4,6 @@
 #include "debug_log.h"
 
 OpusDecoder *g_decoder = nullptr;
-PolyphaseResampler g_resampler;
 uint16_t g_seq = 0;
 bool g_seqPrimed = false;
 
@@ -31,7 +30,6 @@ void OpusStreamShutdown() {
 
 void OpusStreamReset() {
     if (g_decoder) opus_decoder_ctl(g_decoder, OPUS_RESET_STATE);
-    g_resampler.Reset();
     g_seqPrimed = false;
     g_seq = 0;
 }
@@ -39,11 +37,11 @@ void OpusStreamReset() {
 void OpusStreamConceal(int count, std::vector<float> &out) {
     if (!g_decoder) return;
 
-    short pcm[OPUS_MAX_FRAME];
+    float pcm[OPUS_MAX_FRAME];
     for (int i = 0; i < count; i++) {
-        int samples = opus_decode(g_decoder, NULL, 0, pcm, OPUS_MAX_FRAME, 0);
+        int samples = opus_decode_float(g_decoder, NULL, 0, pcm, OPUS_MAX_FRAME, 0);
         if (samples <= 0) return;
 
-        g_resampler.Process(pcm, samples, out);
+        out.insert(out.end(), pcm, pcm + samples);
     }
 }

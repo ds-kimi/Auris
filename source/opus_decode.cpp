@@ -40,7 +40,7 @@ void OpusStreamDecodeFrames(const uint8_t *data, int len, std::vector<float> &ou
 
     const uint8_t *p = data;
     const uint8_t *end = data + len;
-    short pcm[OPUS_MAX_FRAME];
+    float pcm[OPUS_MAX_FRAME];
 
     while (p + sizeof(uint16_t) <= end) {
         uint16_t frameLen = *(const uint16_t *)p;
@@ -59,10 +59,10 @@ void OpusStreamDecodeFrames(const uint8_t *data, int len, std::vector<float> &ou
 
         if (frameLen == 0 || p + frameLen > end) break;
 
-        int samples = opus_decode(g_decoder, p, frameLen, pcm, OPUS_MAX_FRAME, 0);
+        int samples = opus_decode_float(g_decoder, p, frameLen, pcm, OPUS_MAX_FRAME, 0);
         p += frameLen;
 
-        if (samples > 0) g_resampler.Process(pcm, samples, out);
+        if (samples > 0) out.insert(out.end(), pcm, pcm + samples);
     }
 
     // Bytes left over mean the chunk was not laid out the way this loop reads

@@ -4,14 +4,14 @@
 #include <opus.h>
 #include <cstdint>
 
-#include "resampler.h"
-
-// Steam voice is opus at 24 kHz mono.
-static const int OPUS_STREAM_RATE = 24000;
-static const int OPUS_MAX_FRAME = 5760;
+// Steam voice is encoded at 24 kHz, but opus can decode any stream at any of
+// its rates. Asking for 16 kHz, the rate whisper and the Lua API want, lets the
+// codec band-limit internally and removes a resampling pass per frame.
+static const int OPUS_STREAM_RATE = 16000;
+// Longest opus frame (120 ms) at the decode rate.
+static const int OPUS_MAX_FRAME = OPUS_STREAM_RATE * 120 / 1000;
 
 extern OpusDecoder *g_decoder;
-extern PolyphaseResampler g_resampler;
 
 // Frame sequence numbers are the sender's, not ours, so the first one seen
 // after a reset is adopted rather than treated as a gap. Starting from zero

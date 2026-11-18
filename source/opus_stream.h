@@ -7,7 +7,7 @@
 bool OpusStreamInit();
 void OpusStreamShutdown();
 
-// Drops decoder history and filter tail together. Anything decoded after this
+// Drops decoder history. Anything decoded after this
 // must not be filtered against audio from before the break.
 void OpusStreamReset();
 
