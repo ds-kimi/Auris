@@ -49,6 +49,7 @@ CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" 
 			"vendor/whisper.cpp/ggml/src/ggml-cpu/*.cpp",
 			"vendor/whisper.cpp/ggml/src/ggml-cpu/arch/x86/*.c",
 			"vendor/whisper.cpp/ggml/src/ggml-cpu/arch/x86/*.cpp",
+			"vendor/whisper.cpp/ggml/src/ggml-cpu/llamafile/sgemm.cpp",
 		})
 		local versionFile = io.open("VERSION", "r")
 		local aurisVersion = versionFile and versionFile:read("*l") or "unknown"
@@ -57,6 +58,12 @@ CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" 
 		defines({
 			"AURIS_VERSION=\"" .. aurisVersion .. "\"",
 			"GGML_USE_CPU",
+			-- sgemm (llamafile) tinyBLAS kernels; upstream CMake enables them by default
+			"GGML_USE_LLAMAFILE",
+			-- match upstream ggml-cpu CMake for an AVX2 x86 build
+			"GGML_AVX2",
+			"GGML_FMA",
+			"GGML_F16C",
 			"WHISPER_VERSION=\"1.0.0\"",
 			"GGML_VERSION=\"1.0.0\"",
 			"GGML_COMMIT=\"local\"",
