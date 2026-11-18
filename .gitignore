@@ -4,3 +4,4 @@ vulkan-shaders-gen.exe
 vulkan-shaders-gen.obj
 vendor/whisper.cpp
 /projects
+/models
