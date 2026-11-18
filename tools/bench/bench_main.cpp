@@ -1,4 +1,5 @@
 // auris-bench: measures Auris transcription cost outside of srcds
+#include "bench_onnx.h"
 #include "bench_options.h"
 #include "bench_run.h"
 #include "bench_stats.h"
@@ -41,6 +42,15 @@ int main(int argc, char** argv) {
     if (!ParseBenchArgs(argc, argv, opts)) return 1;
     std::vector<BenchClip> clips = LoadClips(opts.wavPath);
     if (clips.empty()) return 1;
+    if (!opts.onnxDir.empty()) {
+        double cpu0 = ProcessCpuSeconds();
+        auto t0 = std::chrono::steady_clock::now();
+        std::vector<ClipResult> results = RunOnnxBench(opts, clips);
+        double wall = std::chrono::duration<double>(std::chrono::steady_clock::now() - t0).count();
+        if (results.empty()) return 1;
+        PrintReport(results, wall, ProcessCpuSeconds() - cpu0);
+        return 0;
+    }
     whisper_context_params cp = whisper_context_default_params();
     cp.use_gpu = false;
     whisper_context* ctx = whisper_init_from_file_with_params_no_state(opts.model.c_str(), cp);

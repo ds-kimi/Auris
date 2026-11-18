@@ -37,6 +37,20 @@ return {
     -- "" disables the gate explicitly.
     vad_model = "garrysmod/data/auris/ggml-silero-v6.2.0.bin",
 
+    -- Local speech engine, read once at server start (ConVar auris_backend).
+    --   "whisper" — whisper.cpp with the model above (every build)
+    --   "onnx"    — sherpa-onnx / ONNX Runtime, 64-bit module only; a 32-bit
+    --               module prints an error and keeps whisper
+    backend = "whisper",
+
+    -- ONNX model family: "moonshine" (English). "parakeet", "zipformer" and
+    -- "sensevoice" are reserved and rejected by this module version.
+    onnx_model_type = "moonshine",
+
+    -- Folder of the sherpa-onnx model release (encoder_model.ort,
+    -- decoder_model_merged.ort, tokens.txt for Moonshine).
+    onnx_model_dir = "garrysmod/data/auris/sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27",
+
     -- BCP-47 language code ("en", "de", "fr", "ja", â€¦).
     -- Ignored for .en.bin models (English is hard-coded in those weights).
     -- Set to "" and enable detect_language below for automatic detection.

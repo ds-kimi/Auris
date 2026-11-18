@@ -88,6 +88,30 @@ local function AddWhisperCore()
 	filter({})
 end
 
+-- sherpa-onnx + static ONNX Runtime, 64-bit only: ORT ships no x86_32
+-- Linux build, so 32-bit modules stay whisper only (asr_backend.cpp)
+local function AddOnnx()
+	filter("platforms:x86_64")
+		defines({"AURIS_WITH_ONNX"})
+		includedirs({"vendor/sherpa-onnx/include"})
+		links({
+			"sherpa-onnx-c-api", "sherpa-onnx-core", "kaldi-decoder-core",
+			"sherpa-onnx-kaldifst-core", "sherpa-onnx-fstfar", "sherpa-onnx-fst",
+			"kaldi-native-fbank-core", "kissfft-float", "ssentencepiece_core",
+			"utf8proc", "onnxruntime",
+		})
+	filter({"platforms:x86_64", "system:windows"})
+		libdirs({path.getabsolute("vendor/sherpa-onnx/win-x64/lib")})
+	filter({"platforms:x86_64", "system:linux"})
+		libdirs({path.getabsolute("vendor/sherpa-onnx/linux-x64/lib")})
+		links({"dl", "pthread"})
+		-- the prebuilt libs come from RHEL devtoolset (pre-C++11 std::string ABI);
+		-- header-only templates such as std::regex then exist in both ABIs under one
+		-- symbol, and the linker's pick crashes ORT at start-up unless we match it
+		defines({"_GLIBCXX_USE_CXX11_ABI=0"})
+	filter({})
+end
+
 local module_name = WITH_VULKAN and "auris-gpu" or "auris"
 CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" .. os.target() .. "/" .. _ACTION})
 	CreateProject({serverside = true, source_path = "source", manual_files = false})
@@ -110,6 +134,8 @@ CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" 
 			libdirs({path.getabsolute("vendor/opus/lib64")})
 		filter({})
 		links({"opus"})
+
+		AddOnnx()
 
 		-- Vulkan GPU backend (opt-in via --with-vulkan)
 		-- Without this flag the module is CPU-only and has no libvulkan dep,
@@ -170,8 +196,11 @@ CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" 
 			"source/pool_limits.cpp",
 			"source/silero_gate.cpp",
 			"source/whisper_params.cpp",
+			"source/onnx_backend.cpp",
+			"source/onnx_model_paths.cpp",
 		})
 		AddWhisperCore()
+		AddOnnx()
 		filter("system:windows")
 			links({"psapi"})
 		filter("system:linux")

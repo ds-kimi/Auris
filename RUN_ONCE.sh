@@ -83,6 +83,10 @@ pushd "$GMCOMMON_DIR" >/dev/null
 git submodule update --init --recursive
 popd >/dev/null
 
+# 64-bit builds link sherpa-onnx (ONNX backend); 32-bit builds never use it
+echo "[sherpa-onnx] Fetching pinned static libs..."
+bash "$MODULE_DIR/tools/setup/fetch_sherpa_onnx.sh"
+
 # ── [4/6] Build whisper.cpp ───────────────────────────────────
 pushd "$VENDOR_WHISPER_DIR" >/dev/null
 if [[ "$CPU_ONLY" -eq 1 ]]; then

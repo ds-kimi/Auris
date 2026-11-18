@@ -25,7 +25,7 @@ static void WorkerMain(WorkerSlot slot) {
 
 static void FreeSlots() {
     for (WorkerSlot& slot : g_slots) {
-        whisper_free_state(slot.state);
+        if (slot.state) whisper_free_state(slot.state);
         if (slot.vad) whisper_vad_free(slot.vad);
     }
     g_slots.clear();
@@ -38,8 +38,9 @@ bool StartWorkerPool(whisper_context* ctx, int workers, bool acftModel,
     bool useVad = SileroModelAvailable(vadPath);
     for (int i = 0; i < workers; i++) {
         WorkerSlot slot;
-        slot.state = whisper_init_state(ctx);
-        if (!slot.state) {
+        // the ONNX backend (ctx null) keeps its decoder state per stream instead
+        if (ctx) slot.state = whisper_init_state(ctx);
+        if (ctx && !slot.state) {
             printf("[Auris] ERROR: could not allocate whisper state %d/%d\n", i + 1, workers);
             FreeSlots();
             return false;
