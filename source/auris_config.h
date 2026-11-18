@@ -9,12 +9,12 @@ struct WhisperConfig {
     bool print_timestamps = false;
     bool single_segment   = false;
     bool no_context       = false;
-    std::string language  = "";
+    std::string language  = "en";
     int n_threads         = 4;
 
     // --- sampling ---
     bool use_beam_search  = false;
-    int greedy_best_of    = 5;
+    int greedy_best_of    = 2;
     int beam_size         = 5;
 
     // --- output ---

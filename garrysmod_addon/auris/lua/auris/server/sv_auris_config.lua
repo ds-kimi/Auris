@@ -15,7 +15,7 @@ local DEFAULTS = {
 
     -- sampling
     use_beam_search  = false,
-    greedy_best_of   = 5,
+    greedy_best_of   = 2,
     beam_size        = 5,
 
     -- output
