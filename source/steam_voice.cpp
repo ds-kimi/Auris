@@ -25,65 +25,48 @@ void ShutdownSteamVoiceDecoder() {
     OpusStreamShutdown();
 }
 
-std::vector<float> DecodeSteamVoice(
-    const uint8_t* data, int len
-) {
+// One opcode and its payload; returns the next read position, or nullptr
+// when the packet is truncated or carries an opcode this decoder does not know.
+static const uint8_t* DecodeOpcode(uint8_t opcode, const uint8_t* p, const uint8_t* end,
+                                   std::vector<float>& result) {
     static bool warnedRate = false;
+    if (p + sizeof(uint16_t) > end) return nullptr;
+    uint16_t value = *(const uint16_t*)p;
+    p += sizeof(uint16_t);
+    switch (opcode) {
+    case OP_SILENCE:
+        // The payload is a silent sample count at the stream rate. Dropping
+        // it costs transcription nothing and deletes every pause from the
+        // timeline; written back only for callers that asked for the
+        // recording rather than the words.
+        if (PreserveTimeline()) result.insert(result.end(), (size_t)value * OUTPUT_RATE / EXPECTED_RATE, 0.0f);
+        return p;
+    case OP_SAMPLERATE:
+        if (value != EXPECTED_RATE && !warnedRate) {
+            warnedRate = true;
+            WDEBUG("[Auris] stream declares %d Hz, decoding as %d\n", (int)value, (int)EXPECTED_RATE);
+        }
+        return p;
+    case OP_CODEC_OPUSPLC:
+        if (p + value > end) return nullptr;
+        OpusStreamDecodeFrames(p, value, result);
+        return p + value;
+    default:
+        WDEBUG("[Auris] Unknown opcode %d\n", opcode);
+        return nullptr;
+    }
+}
+
+std::vector<float> DecodeSteamVoice(int key, const uint8_t* data, int len) {
     std::vector<float> result;
-    if (len < 12) return result;
+    if (len < 12 || !OpusStreamSelect(key)) return result;
 
     // Packet: uint64 steamid + opcodes + uint32 CRC
     const uint8_t* p = data + sizeof(uint64_t);
     const uint8_t* end = data + len - sizeof(uint32_t);
-
-    while (p < end) {
-        if (p + sizeof(char) > end) break;
+    while (p && p < end) {
         uint8_t opcode = *p;
-        p += sizeof(char);
-
-        switch (opcode) {
-        case OP_SILENCE: {
-            if (p + sizeof(uint16_t) > end) return result;
-            // The payload is a silent sample count at the stream rate. Dropping
-            // it costs transcription nothing and deletes every pause from the
-            // timeline: a sentence with breaths in it becomes one shorter run of
-            // glued words, so audio replayed against the clock it was spoken on
-            // runs out long before the speaker stopped. Written back only for
-            // callers that asked for the recording rather than the words.
-            uint16_t silent = *(const uint16_t*)p;
-            p += sizeof(uint16_t);
-
-            if (PreserveTimeline()) {
-                result.insert(result.end(), (size_t)silent * OUTPUT_RATE / EXPECTED_RATE, 0.0f);
-            }
-            break;
-        }
-        case OP_SAMPLERATE: {
-            if (p + sizeof(uint16_t) > end) return result;
-            uint16_t rate = *(const uint16_t*)p;
-            p += sizeof(uint16_t);
-
-            if (rate != EXPECTED_RATE && !warnedRate) {
-                warnedRate = true;
-                WDEBUG("[Auris] stream declares %d Hz, decoding as %d\n",
-                    (int)rate, (int)EXPECTED_RATE);
-            }
-            break;
-        }
-        case OP_CODEC_OPUSPLC: {
-            if (p + sizeof(uint16_t) > end) return result;
-            uint16_t frameDataLen = *(const uint16_t*)p;
-            p += sizeof(uint16_t);
-            if (p + frameDataLen > end) return result;
-
-            OpusStreamDecodeFrames(p, frameDataLen, result);
-            p += frameDataLen;
-            break;
-        }
-        default:
-            WDEBUG("[Auris] Unknown opcode %d\n", opcode);
-            return result;
-        }
+        p = DecodeOpcode(opcode, p + 1, end, result);
     }
     return result;
 }

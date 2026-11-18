@@ -15,11 +15,18 @@ static const int OPUS_MAX_FRAME = OPUS_STREAM_RATE * 120 / 1000;
 // otherwise each lost frame comes back as 120 ms of invented audio.
 static const int OPUS_CONCEAL_FRAME = OPUS_STREAM_RATE / 50;
 
-extern OpusDecoder *g_decoder;
+// One per speaker: opus predicts each frame from the previous ones of the
+// same stream, so a decoder shared between talkers turned every frame of two
+// overlapping speakers into a decode against the wrong history.
+struct OpusSpeakerState {
+    OpusDecoder *decoder = nullptr;
+    // Frame sequence numbers are the sender's, not ours, so the first one seen
+    // after a reset is adopted rather than treated as a gap. Starting from zero
+    // made every utterance open with a burst of concealment for frames that were
+    // never missing, decoded through a decoder that had no history to conceal from.
+    uint16_t seq = 0;
+    bool seqPrimed = false;
+};
 
-// Frame sequence numbers are the sender's, not ours, so the first one seen
-// after a reset is adopted rather than treated as a gap. Starting from zero
-// made every utterance open with a burst of concealment for frames that were
-// never missing, decoded through a decoder that had no history to conceal from.
-extern uint16_t g_seq;
-extern bool g_seqPrimed;
+// The speaker whose packet is being decoded, set by OpusStreamSelect.
+extern OpusSpeakerState *g_speaker;

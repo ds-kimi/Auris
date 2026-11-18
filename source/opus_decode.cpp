@@ -13,18 +13,18 @@ static const int MAX_CONCEAL_FRAMES = 5;
 // signed 16-bit difference so the counter wrapping past 65535 reads as one step
 // forward rather than as the stream running backwards.
 static void SyncSequence(uint16_t seq, std::vector<float> &out) {
-    if (!g_seqPrimed) {
-        g_seqPrimed = true;
-        g_seq = seq;
+    if (!g_speaker->seqPrimed) {
+        g_speaker->seqPrimed = true;
+        g_speaker->seq = seq;
     }
 
-    int delta = (int)(int16_t)(seq - g_seq);
+    int delta = (int)(int16_t)(seq - g_speaker->seq);
 
     if (delta < 0) {
         // The sender restarted its counter, so nothing decoded before this
         // frame has any relation to what comes after it.
         OpusStreamReset();
-        g_seqPrimed = true;
+        g_speaker->seqPrimed = true;
     } else if (delta > 0 && delta <= MAX_CONCEAL_FRAMES) {
         OpusStreamConceal(delta, out);
     }
@@ -32,11 +32,11 @@ static void SyncSequence(uint16_t seq, std::vector<float> &out) {
     // keeps its history, since resetting on ordinary packet loss would add an
     // artifact of its own on top of the gap.
 
-    g_seq = seq + 1;
+    g_speaker->seq = seq + 1;
 }
 
 void OpusStreamDecodeFrames(const uint8_t *data, int len, std::vector<float> &out) {
-    if (!g_decoder) return;
+    if (!g_speaker) return;
 
     const uint8_t *p = data;
     const uint8_t *end = data + len;
@@ -59,7 +59,7 @@ void OpusStreamDecodeFrames(const uint8_t *data, int len, std::vector<float> &ou
 
         if (frameLen == 0 || p + frameLen > end) break;
 
-        int samples = opus_decode_float(g_decoder, p, frameLen, pcm, OPUS_MAX_FRAME, 0);
+        int samples = opus_decode_float(g_speaker->decoder, p, frameLen, pcm, OPUS_MAX_FRAME, 0);
         p += frameLen;
 
         if (samples > 0) out.insert(out.end(), pcm, pcm + samples);
