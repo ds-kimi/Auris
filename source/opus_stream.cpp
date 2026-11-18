@@ -39,7 +39,7 @@ void OpusStreamConceal(int count, std::vector<float> &out) {
 
     float pcm[OPUS_MAX_FRAME];
     for (int i = 0; i < count; i++) {
-        int samples = opus_decode_float(g_decoder, NULL, 0, pcm, OPUS_MAX_FRAME, 0);
+        int samples = opus_decode_float(g_decoder, NULL, 0, pcm, OPUS_CONCEAL_FRAME, 0);
         if (samples <= 0) return;
 
         out.insert(out.end(), pcm, pcm + samples);

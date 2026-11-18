@@ -10,6 +10,10 @@
 static const int OPUS_STREAM_RATE = 16000;
 // Longest opus frame (120 ms) at the decode rate.
 static const int OPUS_MAX_FRAME = OPUS_STREAM_RATE * 120 / 1000;
+// Concealment produces exactly as many samples as it is asked for, so a missing
+// frame must be asked for at steam's 20 ms frame length, not the buffer size:
+// otherwise each lost frame comes back as 120 ms of invented audio.
+static const int OPUS_CONCEAL_FRAME = OPUS_STREAM_RATE / 50;
 
 extern OpusDecoder *g_decoder;
 
