@@ -4,7 +4,6 @@
 #include "debug_log.h"
 #include "result_queue.h"
 #include "silero_gate.h"
-#include "silero_gate.h"
 #include "vad.h"
 #include "whisper_params.h"
 #include <chrono>
