@@ -30,6 +30,13 @@ return {
     -- Keeps latency bounded when players talk faster than the workers keep up.
     max_queue_seconds = 30,
 
+    -- Silero VAD model (ggml-silero-v6.2.0.bin from the whisper.cpp models).
+    -- When the file exists, clips with no speech are skipped and the rest are
+    -- cropped to the spoken part before Whisper runs, which saves the CPU spent
+    -- on silence and breathing. Missing file = gate off. Read once at start.
+    -- "" disables the gate explicitly.
+    vad_model = "garrysmod/data/auris/ggml-silero-v6.2.0.bin",
+
     -- BCP-47 language code ("en", "de", "fr", "ja", …).
     -- Ignored for .en.bin models (English is hard-coded in those weights).
     -- Set to "" and enable detect_language below for automatic detection.

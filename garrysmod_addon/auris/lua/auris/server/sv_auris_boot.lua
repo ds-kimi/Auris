@@ -11,18 +11,8 @@ local function resolveLanguage(cfg)
     return cfg.language
 end
 
--- Values come from an operator file and ConVars: a typo like workers = 64
--- would pin every core, so out-of-range or non-numeric values are clamped.
----@param val any
----@param min number
----@param max number
----@param default number
----@return number
-local function clampNumber(val, min, max, default)
-    val = tonumber(val)
-    if not val or val ~= val then return default end
-    return math.Clamp(val, min, max)
-end
+local clampNumber = Auris._sanitize.clampNumber
+local resolveVadModel = Auris._sanitize.resolveVadModel
 
 ---@param cfg table
 ---@return table
@@ -33,6 +23,7 @@ local function buildWhisperConfig(cfg)
         n_threads        = math.floor(clampNumber(cfg.threads, 1, 8, 1)),
         workers          = math.floor(clampNumber(cfg.workers, 0, 8, 0)),
         max_queue_seconds = clampNumber(cfg.max_queue_seconds, 1, 600, 30),
+        vad_model        = resolveVadModel(cfg.vad_model),
         print_progress   = cfg.print_progress,
         print_timestamps = cfg.print_timestamps,
         single_segment   = cfg.single_segment,

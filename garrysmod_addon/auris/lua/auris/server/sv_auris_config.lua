@@ -8,6 +8,7 @@ local DEFAULTS = {
     threads          = 1,
     workers          = 0,
     max_queue_seconds = 30,
+    vad_model        = "garrysmod/data/auris/ggml-silero-v6.2.0.bin",
     language         = "en",
     debug            = false,
     print_progress   = false,

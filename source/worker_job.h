@@ -3,6 +3,12 @@
 #include "auris_context.h"
 #include "whisper.h"
 
-// ctx is shared read-only between workers; state belongs to the caller alone
-void RunTranscriptionJob(whisper_context* ctx, whisper_state* state,
-                         const TranscriptJob& job, bool acftModel);
+// Everything one worker mutates; ctx is shared read-only between workers
+struct WorkerSlot {
+    whisper_state* state = nullptr;
+    whisper_vad_context* vad = nullptr;  // null = Silero gate disabled
+};
+
+// job.audio may be cropped in place to the detected speech span
+void RunTranscriptionJob(whisper_context* ctx, const WorkerSlot& slot,
+                         TranscriptJob& job, bool acftModel);

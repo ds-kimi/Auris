@@ -15,6 +15,7 @@ struct WhisperConfig {
     // --- worker pool (read once at Init) ---
     int workers             = 0;     // 0 = min(4, max(1, cores / 2))
     float max_queue_seconds = 30.0f; // queued audio above this drops the oldest clips
+    std::string vad_model   = "garrysmod/data/auris/ggml-silero-v6.2.0.bin"; // missing = no Silero gate
 
     // --- sampling ---
     bool use_beam_search  = false;

@@ -22,8 +22,9 @@ bool InitWhisper(const std::string& modelPath) {
     if (!g_ctx) return false;
     printf("[Auris] %s\n", whisper_print_system_info());
 
-    int workers = ResolveWorkerCount(GetWhisperConfig());
-    if (!StartWorkerPool(g_ctx, workers, IsAcftModel(modelPath))) {
+    WhisperConfig cfg = GetWhisperConfig();
+    int workers = ResolveWorkerCount(cfg);
+    if (!StartWorkerPool(g_ctx, workers, IsAcftModel(modelPath), cfg.vad_model)) {
         whisper_free(g_ctx);
         g_ctx = nullptr;
         return false;
