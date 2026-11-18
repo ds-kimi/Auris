@@ -58,6 +58,7 @@ local DEFAULTS = {
     offset_ms      = 0,
     duration_ms    = 0,
     audio_ctx      = 0,
+    dynamic_audio_ctx = true,
 
     -- capture
     preserve_timeline = false,

@@ -264,6 +264,12 @@ return {
     -- Smaller values reduce encoder compute at the cost of losing distant audio.
     audio_ctx = 0,
 
+    -- Shrink the audio context to the clip length on ACFT models (filename
+    -- contains "acft"). Cuts encoder CPU several-fold on short voice clips.
+    -- Ignored on stock models (they loop at reduced context) and when
+    -- audio_ctx above is non-zero.
+    dynamic_audio_ctx = true,
+
 
     -- =========================================================================
     -- CAPTURE

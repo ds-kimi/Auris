@@ -57,6 +57,7 @@ struct WhisperConfig {
     int offset_ms      = 0;
     int duration_ms    = 0;
     int audio_ctx      = 0;
+    bool dynamic_audio_ctx = true;
 };
 
 WhisperConfig GetWhisperConfig();
