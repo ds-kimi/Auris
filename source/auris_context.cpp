@@ -2,6 +2,8 @@
 #include "auris_context.h"
 #include "auris_config.h"
 #include "audio_cache.h"
+#include "cpu_features.h"
+#include <cstdio>
 #include "debug_log.h"
 #include "vad.h"
 
@@ -129,9 +131,15 @@ static void WorkerLoop() {
 }
 
 bool InitWhisper(const std::string& modelPath) {
+    if (!CpuHasRequiredFeatures()) {
+        printf("[Auris] ERROR: CPU lacks AVX2/FMA/F16C, local backend disabled (use the OpenAI backend)\n");
+        return false;
+    }
+
     whisper_context_params cp = whisper_context_default_params();
     g_ctx = whisper_init_from_file_with_params(modelPath.c_str(), cp);
     if (!g_ctx) return false;
+    printf("[Auris] %s\n", whisper_print_system_info());
 
     g_running = true;
     g_worker = std::thread(WorkerLoop);
