@@ -10,7 +10,11 @@ struct WhisperConfig {
     bool single_segment   = false;
     bool no_context       = false;
     std::string language  = "en";
-    int n_threads         = 4;
+    int n_threads         = 1;   // per worker
+
+    // --- worker pool (read once at Init) ---
+    int workers             = 0;     // 0 = min(4, max(1, cores / 2))
+    float max_queue_seconds = 30.0f; // queued audio above this drops the oldest clips
 
     // --- sampling ---
     bool use_beam_search  = false;

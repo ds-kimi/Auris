@@ -16,10 +16,19 @@ return {
     -- .en.bin variants are English-only but faster than the multilingual equivalents.
     model = "garrysmod/data/auris/ggml-tiny.en.bin",
 
-    -- CPU threads for Whisper inference.
-    -- Raise to speed up transcription on servers with spare cores.
-    -- Going beyond physical core count gives no benefit and wastes context switches.
-    threads = 4,
+    -- CPU threads per transcription worker (1..8).
+    -- Many short clips scale better across workers than across threads: keep 1
+    -- and raise workers instead. workers x threads should stay below the
+    -- physical core count so the game tick keeps a core of its own.
+    threads = 1,
+
+    -- Parallel transcription workers (1..8), sharing one copy of the model.
+    -- 0 = auto: half the CPU cores, at most 4. Read once at server start.
+    workers = 0,
+
+    -- Seconds of queued audio (1..600) above which the oldest clips are dropped.
+    -- Keeps latency bounded when players talk faster than the workers keep up.
+    max_queue_seconds = 30,
 
     -- BCP-47 language code ("en", "de", "fr", "ja", …).
     -- Ignored for .en.bin models (English is hard-coded in those weights).

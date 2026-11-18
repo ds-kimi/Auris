@@ -46,6 +46,8 @@ LUA_FUNCTION(Whisper_SetConfig) {
     cfg.no_context       = GetBoolField(LUA, "no_context",       cfg.no_context);
     cfg.language         = GetStrField( LUA, "language",         cfg.language.c_str());
     cfg.n_threads        = GetIntField( LUA, "n_threads",        cfg.n_threads);
+    cfg.workers           = GetIntField(  LUA, "workers",           cfg.workers);
+    cfg.max_queue_seconds = GetFloatField(LUA, "max_queue_seconds", cfg.max_queue_seconds);
 
     // sampling
     cfg.use_beam_search  = GetBoolField(LUA, "use_beam_search",  cfg.use_beam_search);
@@ -111,6 +113,8 @@ LUA_FUNCTION(Whisper_GetConfig) {
     LUA->PushBool(cfg.no_context);       LUA->SetField(-2, "no_context");
     LUA->PushString(cfg.language.c_str()); LUA->SetField(-2, "language");
     LUA->PushNumber(cfg.n_threads);      LUA->SetField(-2, "n_threads");
+    LUA->PushNumber(cfg.workers);           LUA->SetField(-2, "workers");
+    LUA->PushNumber(cfg.max_queue_seconds); LUA->SetField(-2, "max_queue_seconds");
 
     // sampling
     LUA->PushBool(cfg.use_beam_search);  LUA->SetField(-2, "use_beam_search");

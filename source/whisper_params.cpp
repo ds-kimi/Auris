@@ -10,7 +10,7 @@ static void FillCoreParams(const WhisperConfig& cfg, whisper_full_params& w) {
     w.single_segment   = cfg.single_segment;
     w.no_context       = cfg.no_context;
     w.language         = ResolveJobLanguage(cfg);
-    w.n_threads        = cfg.n_threads;
+    w.n_threads        = std::min(8, std::max(1, cfg.n_threads));
 
     w.greedy.best_of        = cfg.greedy_best_of;
     w.beam_search.beam_size = cfg.beam_size;
