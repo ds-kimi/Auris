@@ -22,10 +22,10 @@ void JobQueuePush(TranscriptJob job, size_t maxSamples) {
     uint64_t dropped = 0;
     // the newest job always stays, even when it alone exceeds the budget
     while (g_jobs.size() > 1 && g_queuedSamples > maxSamples) {
-        size_t dropped = g_jobs.front().audio.size();
+        size_t samples = g_jobs.front().audio.size();
         WDEBUG("[Auris] Queue full: dropped %.1fs clip (key %d)\n",
-               dropped / 16000.0f, g_jobs.front().key);
-        g_queuedSamples -= dropped;
+               samples / 16000.0f, g_jobs.front().key);
+        g_queuedSamples -= samples;
         g_jobs.pop_front();
         dropped++;
     }
