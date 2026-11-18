@@ -48,6 +48,7 @@ LUA_FUNCTION(Whisper_SetConfig) {
     cfg.n_threads        = GetIntField( LUA, "n_threads",        cfg.n_threads);
     cfg.workers           = GetIntField(  LUA, "workers",           cfg.workers);
     cfg.max_queue_seconds = GetFloatField(LUA, "max_queue_seconds", cfg.max_queue_seconds);
+    cfg.vad_model         = GetStrField(  LUA, "vad_model",         cfg.vad_model.c_str());
 
     // sampling
     cfg.use_beam_search  = GetBoolField(LUA, "use_beam_search",  cfg.use_beam_search);
@@ -115,6 +116,7 @@ LUA_FUNCTION(Whisper_GetConfig) {
     LUA->PushNumber(cfg.n_threads);      LUA->SetField(-2, "n_threads");
     LUA->PushNumber(cfg.workers);           LUA->SetField(-2, "workers");
     LUA->PushNumber(cfg.max_queue_seconds); LUA->SetField(-2, "max_queue_seconds");
+    LUA->PushString(cfg.vad_model.c_str()); LUA->SetField(-2, "vad_model");
 
     // sampling
     LUA->PushBool(cfg.use_beam_search);  LUA->SetField(-2, "use_beam_search");

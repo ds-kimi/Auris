@@ -3,6 +3,7 @@
 #include "audio_cache.h"
 #include "debug_log.h"
 #include "result_queue.h"
+#include "silero_gate.h"
 #include "vad.h"
 #include "whisper_params.h"
 #include <chrono>
@@ -27,21 +28,34 @@ static void CollectSegments(whisper_state* state, int key) {
     }
 }
 
-void RunTranscriptionJob(whisper_context* ctx, whisper_state* state,
-                         const TranscriptJob& job, bool acftModel) {
+// The energy gate runs first: it is far cheaper than the Silero LSTM
+static bool GateAudio(const WhisperConfig& cfg, const WorkerSlot& slot,
+                      TranscriptJob& job, float dur) {
+    if (!PassesVad(cfg, job.audio)) {
+        WDEBUG("[Auris] VAD: silence, skipping %.1fs chunk\n", dur);
+        return false;
+    }
+    // the cache keeps the uncropped clip: it is what the player actually said
+    StoreCachedAudio(job.key, job.audio);
+    if (slot.vad && !SileroCropToSpeech(slot.vad, job.audio)) {
+        WDEBUG("[Auris] Silero: no speech, skipping %.1fs chunk\n", dur);
+        return false;
+    }
+    return true;
+}
+
+void RunTranscriptionJob(whisper_context* ctx, const WorkerSlot& slot,
+                         TranscriptJob& job, bool acftModel) {
     float dur = (float)job.audio.size() / 16000.0f;
     WDEBUG("[Auris] Worker: transcribing %.1fs\n", dur);
 
     WhisperConfig cfg = GetWhisperConfig();
-    if (!PassesVad(cfg, job.audio)) {
-        WDEBUG("[Auris] VAD: silence, skipping %.1fs chunk\n", dur);
-        return;
-    }
-    StoreCachedAudio(job.key, job.audio);
+    if (!GateAudio(cfg, slot, job, dur)) return;
 
-    whisper_full_params wparams = BuildWhisperParams(cfg, (int)job.audio.size(), acftModel);
+    int n = (int)job.audio.size();
+    whisper_full_params wparams = BuildWhisperParams(cfg, n, acftModel);
     auto t0 = std::chrono::steady_clock::now();
-    if (whisper_full_with_state(ctx, state, wparams, job.audio.data(), (int)job.audio.size()) != 0) {
+    if (whisper_full_with_state(ctx, slot.state, wparams, job.audio.data(), n) != 0) {
         WDEBUG("[Auris] Worker: transcription failed\n");
         return;
     }
@@ -50,6 +64,7 @@ void RunTranscriptionJob(whisper_context* ctx, whisper_state* state,
     // sign of temperature fallbacks or a token loop
     double ms = std::chrono::duration<double, std::milli>(
         std::chrono::steady_clock::now() - t0).count();
-    WDEBUG("[Auris] Timings: %.0f ms for %.1fs (rtf %.2f)\n", ms, dur, ms / 1000.0 / dur);
-    CollectSegments(state, job.key);
+    float run = (float)n / 16000.0f;
+    WDEBUG("[Auris] Timings: %.0f ms for %.1fs (rtf %.2f)\n", ms, run, ms / 1000.0 / run);
+    CollectSegments(slot.state, job.key);
 }

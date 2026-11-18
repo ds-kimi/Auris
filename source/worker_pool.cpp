@@ -3,6 +3,7 @@
 #include "worker_pool.h"
 #include "debug_log.h"
 #include "job_queue.h"
+#include "silero_gate.h"
 #include "thread_priority.h"
 #include "worker_job.h"
 #include <thread>
@@ -10,37 +11,45 @@
 
 static whisper_context* g_poolCtx = nullptr;
 static bool g_poolAcft = false;
-static std::vector<whisper_state*> g_states;
+static std::vector<WorkerSlot> g_slots;
 static std::vector<std::thread> g_threads;
 
-static void WorkerMain(whisper_state* state) {
+static void WorkerMain(WorkerSlot slot) {
     LowerCurrentThreadPriority();
     TranscriptJob job;
     while (JobQueuePop(job)) {
         if (job.audio.empty()) continue;
-        RunTranscriptionJob(g_poolCtx, state, job, g_poolAcft);
+        RunTranscriptionJob(g_poolCtx, slot, job, g_poolAcft);
     }
 }
 
-static void FreeStates() {
-    for (whisper_state* state : g_states) whisper_free_state(state);
-    g_states.clear();
+static void FreeSlots() {
+    for (WorkerSlot& slot : g_slots) {
+        whisper_free_state(slot.state);
+        if (slot.vad) whisper_vad_free(slot.vad);
+    }
+    g_slots.clear();
 }
 
-bool StartWorkerPool(whisper_context* ctx, int workers, bool acftModel) {
+bool StartWorkerPool(whisper_context* ctx, int workers, bool acftModel,
+                     const std::string& vadPath) {
     g_poolCtx = ctx;
     g_poolAcft = acftModel;
+    bool useVad = SileroModelAvailable(vadPath);
     for (int i = 0; i < workers; i++) {
-        whisper_state* state = whisper_init_state(ctx);
-        if (!state) {
+        WorkerSlot slot;
+        slot.state = whisper_init_state(ctx);
+        if (!slot.state) {
             printf("[Auris] ERROR: could not allocate whisper state %d/%d\n", i + 1, workers);
-            FreeStates();
+            FreeSlots();
             return false;
         }
-        g_states.push_back(state);
+        // a corrupt VAD file only costs the gate, never the transcription
+        if (useVad) slot.vad = InitSileroGate(vadPath);
+        g_slots.push_back(slot);
     }
     JobQueueOpen();
-    for (whisper_state* state : g_states) g_threads.emplace_back(WorkerMain, state);
+    for (const WorkerSlot& slot : g_slots) g_threads.emplace_back(WorkerMain, slot);
     WDEBUG("[Auris] %d worker thread(s) started\n", workers);
     return true;
 }
@@ -51,6 +60,6 @@ void StopWorkerPool() {
         if (t.joinable()) t.join();
     }
     g_threads.clear();
-    FreeStates();
+    FreeSlots();
     g_poolCtx = nullptr;
 }
