@@ -9,6 +9,10 @@ local DEFAULTS = {
     workers          = 0,
     max_queue_seconds = 30,
     vad_model        = "garrysmod/data/auris/ggml-silero-v6.2.0.bin",
+    affinity         = true,
+    pin_main_thread  = true,
+    worker_cores     = "",
+    auto_workers     = false,
     backend          = "whisper",
     onnx_model_type  = "moonshine",
     onnx_model_dir   = "garrysmod/data/auris/sherpa-onnx-moonshine-tiny-en-quantized-2026-02-27",
@@ -88,6 +92,7 @@ local function registerConVars(cfg)
     CreateConVar("auris_threads",  tostring(cfg.threads),  FCVAR_ARCHIVE, "Whisper CPU threads per worker")
     CreateConVar("auris_workers",  tostring(cfg.workers),  FCVAR_ARCHIVE, "Transcription workers (0 = auto)")
     CreateConVar("auris_language", tostring(cfg.language), FCVAR_ARCHIVE, "Transcription language code")
+    CreateConVar("auris_affinity", cfg.affinity and "1" or "0", FCVAR_ARCHIVE, "Keep workers off the game tick core")
     CreateConVar("auris_backend",  tostring(cfg.backend),  FCVAR_ARCHIVE, "Local engine: whisper or onnx (64-bit only)")
     CreateConVar("auris_debug",    cfg.debug and "1" or "0", FCVAR_ARCHIVE, "Enable Auris debug output")
 end
@@ -100,6 +105,7 @@ local function applyConVarOverrides(cfg)
     cfg.language = GetConVar("auris_language"):GetString()        or cfg.language
     cfg.backend  = GetConVar("auris_backend"):GetString()         or cfg.backend
     cfg.debug    = GetConVar("auris_debug"):GetBool()
+    cfg.affinity = GetConVar("auris_affinity"):GetBool()
 end
 
 function Auris.LoadConfig()

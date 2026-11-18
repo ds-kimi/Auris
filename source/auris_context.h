@@ -7,6 +7,7 @@
 #include <queue>
 #include <thread>
 #include <atomic>
+#include <chrono>
 #include <condition_variable>
 
 struct TranscriptResult {
@@ -17,6 +18,8 @@ struct TranscriptResult {
 struct TranscriptJob {
     int key;
     std::vector<float> audio;
+    // set by the queue; the auto_workers tuner reads how long the clip waited
+    std::chrono::steady_clock::time_point queuedAt{};
 };
 
 bool InitWhisper(const std::string& modelPath);

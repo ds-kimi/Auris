@@ -15,6 +15,7 @@ local clampNumber = Auris._sanitize.clampNumber
 local resolveVadModel = Auris._sanitize.resolveVadModel
 local resolveChoice = Auris._sanitize.resolveChoice
 local resolveModelDir = Auris._sanitize.resolveModelDir
+local resolveCpuList = Auris._sanitize.resolveCpuList
 
 local BACKENDS = { whisper = true, onnx = true }
 -- J1 wires Moonshine only; the module rejects the others with a clear error
@@ -31,6 +32,10 @@ local function buildWhisperConfig(cfg)
         workers          = math.floor(clampNumber(cfg.workers, 0, 8, 0)),
         max_queue_seconds = clampNumber(cfg.max_queue_seconds, 1, 600, 30),
         vad_model        = resolveVadModel(cfg.vad_model),
+        affinity         = cfg.affinity ~= false,
+        pin_main_thread  = cfg.pin_main_thread ~= false,
+        worker_cores     = resolveCpuList(cfg.worker_cores),
+        auto_workers     = cfg.auto_workers == true,
         backend          = resolveChoice(cfg.backend, BACKENDS, "whisper"),
         onnx_model_type  = resolveChoice(cfg.onnx_model_type, ONNX_MODEL_TYPES, "moonshine"),
         onnx_model_dir   = resolveModelDir(cfg.onnx_model_dir, DEFAULT_ONNX_DIR),

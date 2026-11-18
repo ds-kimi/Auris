@@ -27,6 +27,7 @@ include("auris/server/sv_auris_config.lua")
 Auris.LoadConfig()
 
 include("auris/server/sv_auris_sanitize.lua")
+include("auris/server/sv_auris_sanitize_cpu.lua")
 include("auris/server/sv_auris_boot.lua")
 Auris.Boot()
 

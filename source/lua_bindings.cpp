@@ -7,6 +7,7 @@
 #include "steam_voice.h"
 #include "auris_config.h"
 #include "debug_log.h"
+#include "worker_placement.h"
 
 using namespace GarrysMod::Lua;
 
@@ -79,6 +80,8 @@ LUA_FUNCTION(Whisper_FlushRaw) {
 
 // auris.Poll() -> sid64, text, audio_binary or nil
 LUA_FUNCTION(Whisper_Poll) {
+    // the poll timer runs on the main thread: the one place to see its core
+    RefreshPlacement();
     TranscriptResult result;
     if (!PollResult(result)) return 0;
 

@@ -49,6 +49,10 @@ LUA_FUNCTION(Whisper_SetConfig) {
     cfg.workers           = GetIntField(  LUA, "workers",           cfg.workers);
     cfg.max_queue_seconds = GetFloatField(LUA, "max_queue_seconds", cfg.max_queue_seconds);
     cfg.vad_model         = GetStrField(  LUA, "vad_model",         cfg.vad_model.c_str());
+    cfg.affinity          = GetBoolField( LUA, "affinity",          cfg.affinity);
+    cfg.pin_main_thread   = GetBoolField( LUA, "pin_main_thread",   cfg.pin_main_thread);
+    cfg.worker_cores      = GetStrField(  LUA, "worker_cores",      cfg.worker_cores.c_str());
+    cfg.auto_workers      = GetBoolField( LUA, "auto_workers",      cfg.auto_workers);
     cfg.backend           = GetStrField(  LUA, "backend",           cfg.backend.c_str());
     cfg.onnx_model_type   = GetStrField(  LUA, "onnx_model_type",   cfg.onnx_model_type.c_str());
     cfg.onnx_model_dir    = GetStrField(  LUA, "onnx_model_dir",    cfg.onnx_model_dir.c_str());
@@ -120,6 +124,10 @@ LUA_FUNCTION(Whisper_GetConfig) {
     LUA->PushNumber(cfg.workers);           LUA->SetField(-2, "workers");
     LUA->PushNumber(cfg.max_queue_seconds); LUA->SetField(-2, "max_queue_seconds");
     LUA->PushString(cfg.vad_model.c_str()); LUA->SetField(-2, "vad_model");
+    LUA->PushBool(cfg.affinity);            LUA->SetField(-2, "affinity");
+    LUA->PushBool(cfg.pin_main_thread);     LUA->SetField(-2, "pin_main_thread");
+    LUA->PushString(cfg.worker_cores.c_str()); LUA->SetField(-2, "worker_cores");
+    LUA->PushBool(cfg.auto_workers);        LUA->SetField(-2, "auto_workers");
     LUA->PushString(cfg.backend.c_str());         LUA->SetField(-2, "backend");
     LUA->PushString(cfg.onnx_model_type.c_str()); LUA->SetField(-2, "onnx_model_type");
     LUA->PushString(cfg.onnx_model_dir.c_str());  LUA->SetField(-2, "onnx_model_dir");

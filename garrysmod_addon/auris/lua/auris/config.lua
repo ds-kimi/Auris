@@ -37,6 +37,24 @@ return {
     -- "" disables the gate explicitly.
     vad_model = "garrysmod/data/auris/ggml-silero-v6.2.0.bin",
 
+    -- Keeps transcription workers off the CPU core running the game tick and,
+    -- on CPUs with several L3 caches (Ryzen CCDs), on another L3 so the model
+    -- weights do not evict the tick's cache. Read once at start (ConVar
+    -- auris_affinity).
+    affinity = true,
+
+    -- Pins the srcds main thread to the core it currently runs on so the
+    -- worker mask stays valid. Only used with affinity = true.
+    pin_main_thread = true,
+
+    -- CPU list for the workers, same syntax as taskset ("2-7,10"). "" = auto.
+    -- The main-thread core is always removed from it.
+    worker_cores = "",
+
+    -- Starts with one worker and adds one (up to workers) while clips wait
+    -- over a second in the queue, removes one when the queue stays empty.
+    auto_workers = false,
+
     -- Local speech engine, read once at server start (ConVar auris_backend).
     --   "whisper" — whisper.cpp with the model above (every build)
     --   "onnx"    — sherpa-onnx / ONNX Runtime, 64-bit module only; a 32-bit
