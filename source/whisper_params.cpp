@@ -16,7 +16,9 @@ static void FillCoreParams(const WhisperConfig& cfg, whisper_full_params& w) {
     w.beam_search.beam_size = cfg.beam_size;
 
     w.translate       = cfg.translate;
-    w.detect_language = cfg.detect_language;
+    // whisper's own detect_language only detects and returns no text; auto-detection
+    // with transcription goes through language = "auto" instead (ResolveJobLanguage)
+    w.detect_language = false;
     w.no_timestamps   = cfg.no_timestamps;
     w.print_special   = cfg.print_special;
     w.print_realtime  = cfg.print_realtime;

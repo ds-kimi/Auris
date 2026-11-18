@@ -5,7 +5,7 @@
 
 const char* ResolveJobLanguage(const WhisperConfig& cfg) {
     if (!cfg.language.empty()) return cfg.language.c_str();
-    return cfg.detect_language ? nullptr : "en";
+    return cfg.detect_language ? "auto" : "en";
 }
 
 int ChooseMaxTokens(const WhisperConfig& cfg, int nSamples) {
