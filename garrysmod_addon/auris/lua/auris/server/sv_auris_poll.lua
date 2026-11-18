@@ -7,7 +7,7 @@
 ---@param key integer|nil voice buffer key, nil from an older module binary
 ---@return Player|nil
 function Auris.PlayerForResult(sid, key)
-    if isnumber(key) and key < 0 then
+    if sid == "0" and isnumber(key) and key < 0 then
         local ply = Entity(-key)
         if IsValid(ply) and ply:IsPlayer() then return ply end
         return nil

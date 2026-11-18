@@ -8,6 +8,7 @@
 #include "auris_config.h"
 #include "debug_log.h"
 #include "worker_placement.h"
+#include "voice_key.h"
 
 using namespace GarrysMod::Lua;
 
@@ -40,7 +41,7 @@ LUA_FUNCTION(Whisper_Init) {
 // auris.Flush(userid) -> nil
 // Flushes buffered audio and runs transcription
 LUA_FUNCTION(Whisper_Flush) {
-    int userid = (int)LUA->CheckNumber(1);
+    int userid = VoiceKeyFromLua(LUA->CheckNumber(1));
     auto audio = GetAudioBuffer().Flush(userid);
     if (audio.empty()) return 0;
     QueueTranscription(userid, std::move(audio));
@@ -65,7 +66,7 @@ LUA_FUNCTION(Whisper_FlushAll) {
 // the audio elsewhere (e.g. OpenAI /v1/audio/transcriptions) and fire the
 // Auris_Transcription hook itself.
 LUA_FUNCTION(Whisper_FlushRaw) {
-    int userid = (int)LUA->CheckNumber(1);
+    int userid = VoiceKeyFromLua(LUA->CheckNumber(1));
     auto audio = GetAudioBuffer().Flush(userid);
     if (audio.empty()) {
         LUA->PushNil();

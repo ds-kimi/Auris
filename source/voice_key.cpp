@@ -21,3 +21,10 @@ int VoiceKeyFor(IClient* cl, uint64_t sid64) {
     if (entity != slot + 1 || entity < 1 || entity > kMaxEntity) return 0;
     return -entity;
 }
+
+// Lua numbers are doubles: AccountID() above 2^31 overflowed the plain (int)
+// cast (undefined behaviour) instead of wrapping like the hook's own key
+int VoiceKeyFromLua(double value) {
+    if (!(value >= -2147483648.0 && value <= 4294967295.0)) return 0;
+    return (int)(uint32_t)(int64_t)value;
+}
