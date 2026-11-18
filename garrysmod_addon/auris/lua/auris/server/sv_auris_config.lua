@@ -5,7 +5,9 @@ local DEFAULTS = {
     -- core
     model            = "data/auris/ggml-tiny.en.bin",
     port             = 4000,
-    threads          = 4,
+    threads          = 1,
+    workers          = 0,
+    max_queue_seconds = 30,
     language         = "en",
     debug            = false,
     print_progress   = false,
@@ -79,7 +81,8 @@ end
 
 ---@param cfg table
 local function registerConVars(cfg)
-    CreateConVar("auris_threads",  tostring(cfg.threads),  FCVAR_ARCHIVE, "Whisper CPU thread count")
+    CreateConVar("auris_threads",  tostring(cfg.threads),  FCVAR_ARCHIVE, "Whisper CPU threads per worker")
+    CreateConVar("auris_workers",  tostring(cfg.workers),  FCVAR_ARCHIVE, "Transcription workers (0 = auto)")
     CreateConVar("auris_language", tostring(cfg.language), FCVAR_ARCHIVE, "Transcription language code")
     CreateConVar("auris_debug",    cfg.debug and "1" or "0", FCVAR_ARCHIVE, "Enable Auris debug output")
 end
@@ -88,6 +91,7 @@ end
 ---@param cfg table
 local function applyConVarOverrides(cfg)
     cfg.threads  = tonumber(GetConVar("auris_threads"):GetInt())  or cfg.threads
+    cfg.workers  = tonumber(GetConVar("auris_workers"):GetInt())  or cfg.workers
     cfg.language = GetConVar("auris_language"):GetString()        or cfg.language
     cfg.debug    = GetConVar("auris_debug"):GetBool()
 end

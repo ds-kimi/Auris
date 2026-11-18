@@ -11,13 +11,28 @@ local function resolveLanguage(cfg)
     return cfg.language
 end
 
+-- Values come from an operator file and ConVars: a typo like workers = 64
+-- would pin every core, so out-of-range or non-numeric values are clamped.
+---@param val any
+---@param min number
+---@param max number
+---@param default number
+---@return number
+local function clampNumber(val, min, max, default)
+    val = tonumber(val)
+    if not val or val ~= val then return default end
+    return math.Clamp(val, min, max)
+end
+
 ---@param cfg table
 ---@return table
 local function buildWhisperConfig(cfg)
     return {
         -- core
         language         = resolveLanguage(cfg),
-        n_threads        = cfg.threads,
+        n_threads        = math.floor(clampNumber(cfg.threads, 1, 8, 1)),
+        workers          = math.floor(clampNumber(cfg.workers, 0, 8, 0)),
+        max_queue_seconds = clampNumber(cfg.max_queue_seconds, 1, 600, 30),
         print_progress   = cfg.print_progress,
         print_timestamps = cfg.print_timestamps,
         single_segment   = cfg.single_segment,
@@ -78,6 +93,11 @@ function Auris.Boot()
     -- but whisper.cpp and its worker thread are skipped entirely.
     local useRemote = cfg.openai_api_key ~= ""
 
+    -- SetConfig before Init: the worker pool is sized from the config at Init time
+    if not useRemote then
+        auris.SetConfig(buildWhisperConfig(cfg))
+    end
+
     -- _G.__AurisInitDone survives lua_refresh (unlike the Auris table which is
     -- re-declared each run). Skip Init() when the C++ module is already running.
     if not _G.__AurisInitDone then
@@ -86,10 +106,6 @@ function Auris.Boot()
             return
         end
         _G.__AurisInitDone = true
-    end
-
-    if not useRemote then
-        auris.SetConfig(buildWhisperConfig(cfg))
     end
 
     -- Capture fidelity is not a whisper setting: it changes what lands in the
