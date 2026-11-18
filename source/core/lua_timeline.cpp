@@ -1,6 +1,6 @@
 // Lua bindings for the capture fidelity flag
-#include "lua_bindings.h"
-#include "capture_mode.h"
+#include "core/lua_bindings.h"
+#include "core/capture_mode.h"
 
 using namespace GarrysMod::Lua;
 

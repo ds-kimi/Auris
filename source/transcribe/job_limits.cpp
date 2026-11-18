@@ -1,6 +1,6 @@
 // Auto-detection costs an extra encoder pass and misfires on short noisy clips,
 // and an unbounded decoder can loop for hundreds of tokens on a hallucination.
-#include "job_limits.h"
+#include "transcribe/job_limits.h"
 #include <algorithm>
 
 const char* ResolveJobLanguage(const WhisperConfig& cfg) {

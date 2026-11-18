@@ -1,8 +1,8 @@
 // Workers write their own slot only and the main thread reads with relaxed
 // atomics: a GetStats call must never wait behind a running decode.
-#include "worker_stats.h"
-#include "queue_stats.h"
-#include "worker_tuner.h"
+#include "transcribe/worker_stats.h"
+#include "transcribe/queue_stats.h"
+#include "transcribe/worker_tuner.h"
 #include <atomic>
 
 static const int kMaxWorkers = 8;

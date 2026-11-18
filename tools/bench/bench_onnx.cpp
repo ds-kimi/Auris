@@ -1,7 +1,7 @@
 // One clip at a time: per-clip CPU stays exact; worker scaling comes with J2
 #include "bench_onnx.h"
 #include "bench_stats.h"
-#include "onnx_backend.h"
+#include "transcribe/onnx/onnx_backend.h"
 #include <chrono>
 
 static ClipResult RunOnnxClip(const BenchClip& clip) {

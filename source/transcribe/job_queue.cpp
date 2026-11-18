@@ -1,8 +1,8 @@
 // Under load, fresh speech is worth more than a backlog nobody waits for anymore:
 // dropping the oldest clips keeps transcription latency bounded.
-#include "job_queue.h"
-#include "debug_log.h"
-#include "queue_stats.h"
+#include "transcribe/job_queue.h"
+#include "util/debug_log.h"
+#include "transcribe/queue_stats.h"
 #include <condition_variable>
 #include <deque>
 #include <mutex>

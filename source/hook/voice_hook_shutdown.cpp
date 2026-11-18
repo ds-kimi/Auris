@@ -1,5 +1,5 @@
-#include "voice_hook.h"
-#include "voice_hook_state.h"
+#include "hook/voice_hook.h"
+#include "hook/voice_hook_state.h"
 
 #include <cstdio>
 

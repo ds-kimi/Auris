@@ -1,10 +1,10 @@
 // One job end to end: silence gate, decode on the pool's backend, result push
-#include "worker_job.h"
-#include "debug_log.h"
-#include "job_gate.h"
-#include "onnx_backend.h"
-#include "result_queue.h"
-#include "whisper_params.h"
+#include "transcribe/worker_job.h"
+#include "util/debug_log.h"
+#include "transcribe/job_gate.h"
+#include "transcribe/onnx/onnx_backend.h"
+#include "transcribe/result_queue.h"
+#include "transcribe/whisper_params.h"
 #include <chrono>
 
 static void CollectSegments(whisper_state* state, int key) {

@@ -1,7 +1,7 @@
 // Zipformer exports carry the training epoch in the file name
 // (encoder-epoch-99-avg-1.int8.onnx), so a fixed name would force operators
 // to rename files; int8 wins because fp32 doubles the CPU cost for no gain
-#include "onnx_file_find.h"
+#include "transcribe/onnx/onnx_file_find.h"
 #include <algorithm>
 #include <filesystem>
 #include <vector>

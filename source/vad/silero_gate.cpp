@@ -1,6 +1,6 @@
 // wparams.vad is not used: whisper_full keeps its VAD context on the shared
 // whisper_context, which workers must treat as read-only.
-#include "silero_gate.h"
+#include "vad/silero_gate.h"
 #include <algorithm>
 #include <cstdio>
 

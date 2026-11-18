@@ -2,7 +2,7 @@
 // SteamID key collapsed all of them into one buffer that Lua could not even
 // flush (AccountID() is -1 there). The engine's player slot is the only other
 // identity in reach without vtable calls whose layout varies per branch.
-#include "voice_key.h"
+#include "audio/voice_key.h"
 
 #include <cstring>
 

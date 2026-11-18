@@ -1,5 +1,5 @@
 // Backend choice is read once at Init: the pool is built for one engine
-#include "asr_backend.h"
+#include "transcribe/asr_backend.h"
 #include <cstdio>
 
 AsrBackend ResolveAsrBackend(const WhisperConfig& cfg) {

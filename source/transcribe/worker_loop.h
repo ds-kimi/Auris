@@ -1,6 +1,6 @@
 // Body of one transcription worker thread
 #pragma once
-#include "worker_job.h"
+#include "transcribe/worker_job.h"
 
 // Runs until SetWorkerLoopRunning(false) and the queue closes; ctx null = ONNX
 void WorkerMain(whisper_context* ctx, WorkerSlot slot, bool acftModel);

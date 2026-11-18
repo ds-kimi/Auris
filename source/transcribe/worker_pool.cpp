@@ -1,14 +1,14 @@
 // whisper_context holds only the weights and is read-only during inference, so
 // workers share it; everything mutated by a decode lives in a per-worker state.
-#include "worker_pool.h"
-#include "auris_config.h"
-#include "debug_log.h"
-#include "job_queue.h"
-#include "silero_gate.h"
-#include "worker_loop.h"
-#include "worker_placement.h"
-#include "worker_stats.h"
-#include "worker_tuner.h"
+#include "transcribe/worker_pool.h"
+#include "core/auris_config.h"
+#include "util/debug_log.h"
+#include "transcribe/job_queue.h"
+#include "vad/silero_gate.h"
+#include "transcribe/worker_loop.h"
+#include "transcribe/worker_placement.h"
+#include "transcribe/worker_stats.h"
+#include "transcribe/worker_tuner.h"
 #include <thread>
 #include <vector>
 

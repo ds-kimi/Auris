@@ -1,6 +1,6 @@
 // Keeps transcription workers off the core running the srcds tick
 #pragma once
-#include "auris_config.h"
+#include "core/auris_config.h"
 #include <cstdint>
 
 // Reads affinity / pin_main_thread / worker_cores; call on the main thread

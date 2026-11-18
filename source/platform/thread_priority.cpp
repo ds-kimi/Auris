@@ -1,6 +1,6 @@
 // srcds runs its tick at normal priority: transcription must lose every contest
 // for a core, so a busy pool delays transcripts instead of stuttering the server.
-#include "thread_priority.h"
+#include "platform/thread_priority.h"
 #ifdef _WIN32
 #include <windows.h>
 #else

@@ -1,4 +1,4 @@
-#include "onnx_recognizer_config.h"
+#include "transcribe/onnx/onnx_recognizer_config.h"
 #ifdef AURIS_WITH_ONNX
 #include <cstring>
 

@@ -1,7 +1,7 @@
 // auris.GetStats(): numbers only, so an addon can graph the pool's cost
 // without learning anything about the server beyond its own transcription load
-#include "lua_bindings.h"
-#include "worker_stats.h"
+#include "core/lua_bindings.h"
+#include "transcribe/worker_stats.h"
 
 using namespace GarrysMod::Lua;
 

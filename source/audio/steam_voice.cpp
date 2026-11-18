@@ -1,8 +1,8 @@
 // Decodes steam voice packets to PCM for auris
-#include "steam_voice.h"
-#include "opus_stream.h"
-#include "debug_log.h"
-#include "capture_mode.h"
+#include "audio/steam_voice.h"
+#include "audio/opus_stream.h"
+#include "util/debug_log.h"
+#include "core/capture_mode.h"
 #include <cstring>
 
 enum {

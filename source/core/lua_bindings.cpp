@@ -1,14 +1,14 @@
 // Lua-facing functions for auris module
-#include "lua_bindings.h"
-#include "auris_context.h"
-#include "audio_cache.h"
-#include "audio_buffer.h"
-#include "voice_hook.h"
-#include "steam_voice.h"
-#include "auris_config.h"
-#include "debug_log.h"
-#include "worker_placement.h"
-#include "voice_key.h"
+#include "core/lua_bindings.h"
+#include "core/auris_context.h"
+#include "audio/audio_cache.h"
+#include "audio/audio_buffer.h"
+#include "hook/voice_hook.h"
+#include "audio/steam_voice.h"
+#include "core/auris_config.h"
+#include "util/debug_log.h"
+#include "transcribe/worker_placement.h"
+#include "audio/voice_key.h"
 
 using namespace GarrysMod::Lua;
 

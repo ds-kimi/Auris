@@ -1,9 +1,9 @@
-#include "voice_hook.h"
-#include "voice_hook_state.h"
-#include "audio_buffer.h"
-#include "steam_voice.h"
-#include "debug_log.h"
-#include "voice_key.h"
+#include "hook/voice_hook.h"
+#include "hook/voice_hook_state.h"
+#include "audio/audio_buffer.h"
+#include "audio/steam_voice.h"
+#include "util/debug_log.h"
+#include "audio/voice_key.h"
 
 #include <GarrysMod/FactoryLoader.hpp>
 #include <GarrysMod/Symbol.hpp>

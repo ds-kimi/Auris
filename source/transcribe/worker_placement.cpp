@@ -1,9 +1,9 @@
 // The OS may migrate the srcds main thread at any time; pinning it (as
 // gm_antiesp does) keeps the mask computed for its core valid in between.
-#include "worker_placement.h"
-#include "cpu_topology.h"
-#include "thread_cpu.h"
-#include "worker_mask.h"
+#include "transcribe/worker_placement.h"
+#include "platform/cpu_topology.h"
+#include "platform/thread_cpu.h"
+#include "transcribe/worker_mask.h"
 #include <atomic>
 #include <chrono>
 #include <cstdio>

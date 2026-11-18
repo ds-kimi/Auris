@@ -1,7 +1,7 @@
 // Opus decoder lifecycle and packet-loss concealment.
-#include "opus_stream.h"
-#include "opus_stream_state.h"
-#include "debug_log.h"
+#include "audio/opus_stream.h"
+#include "audio/opus_stream_state.h"
+#include "util/debug_log.h"
 
 bool OpusStreamInit() {
     // decoders are per speaker and created lazily: fail at init, not on the

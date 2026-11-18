@@ -1,5 +1,5 @@
 #ifndef _WIN32
-#include "cpu_topology.h"
+#include "platform/cpu_topology.h"
 #include <cstdio>
 
 // Linux affinity is per thread: sched_getaffinity(0) on the main thread came

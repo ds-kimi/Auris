@@ -1,6 +1,6 @@
 // Which speech recognizer the worker pool runs
 #pragma once
-#include "auris_config.h"
+#include "core/auris_config.h"
 
 enum class AsrBackend { Whisper, Onnx };
 

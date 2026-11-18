@@ -5,7 +5,7 @@
 #include <cmath>
 #include <cstdio>
 
-#include "vad.h"
+#include "vad/vad.h"
 
 namespace auris {
 

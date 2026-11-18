@@ -1,7 +1,7 @@
 // sensevoice stays whitelisted in Lua but is rejected here: it was not
 // benched, so operators get a clear error instead of an untested path
-#include "onnx_model_paths.h"
-#include "onnx_file_find.h"
+#include "transcribe/onnx/onnx_model_paths.h"
+#include "transcribe/onnx/onnx_file_find.h"
 #include <cstdio>
 #include <fstream>
 

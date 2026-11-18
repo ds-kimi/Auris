@@ -1,12 +1,12 @@
 // Placement and accounting wrap every job here so both backends (whisper and
 // ONNX) get them without either decode path knowing.
-#include "worker_loop.h"
-#include "job_queue.h"
-#include "thread_cpu.h"
-#include "thread_priority.h"
-#include "worker_placement.h"
-#include "worker_stats.h"
-#include "worker_tuner.h"
+#include "transcribe/worker_loop.h"
+#include "transcribe/job_queue.h"
+#include "platform/thread_cpu.h"
+#include "platform/thread_priority.h"
+#include "transcribe/worker_placement.h"
+#include "transcribe/worker_stats.h"
+#include "transcribe/worker_tuner.h"
 #include <atomic>
 #include <chrono>
 #include <thread>

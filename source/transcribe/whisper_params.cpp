@@ -1,7 +1,7 @@
 // Maps WhisperConfig to whisper_full_params, plus per-clip audio_ctx sizing
-#include "whisper_params.h"
-#include "debug_log.h"
-#include "job_limits.h"
+#include "transcribe/whisper_params.h"
+#include "util/debug_log.h"
+#include "transcribe/job_limits.h"
 #include <algorithm>
 
 static void FillCoreParams(const WhisperConfig& cfg, whisper_full_params& w) {

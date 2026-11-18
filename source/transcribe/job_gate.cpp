@@ -1,9 +1,9 @@
 // Energy gate and Silero crop, shared by the whisper and ONNX backends
-#include "job_gate.h"
-#include "audio_cache.h"
-#include "debug_log.h"
-#include "silero_gate.h"
-#include "vad.h"
+#include "transcribe/job_gate.h"
+#include "audio/audio_cache.h"
+#include "util/debug_log.h"
+#include "vad/silero_gate.h"
+#include "vad/vad.h"
 
 // Skips chunks whose trailing 1 s is as loud as the average, which covers both
 // pure-silence buffers and continuous-noise buffers that would otherwise trigger

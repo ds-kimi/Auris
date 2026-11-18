@@ -1,6 +1,6 @@
 // Busy workers cost L3 and memory bandwidth to the tick: start with one and
 // only add workers while clips actually wait.
-#include "worker_tuner.h"
+#include "transcribe/worker_tuner.h"
 #include <atomic>
 #include <chrono>
 #include <mutex>

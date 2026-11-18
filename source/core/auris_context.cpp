@@ -1,14 +1,14 @@
 // Auris model lifecycle: weights loaded once, transcribed by a worker pool
-#include "auris_context.h"
-#include "asr_backend.h"
-#include "auris_config.h"
-#include "cpu_features.h"
-#include "job_queue.h"
-#include "onnx_backend.h"
-#include "onnx_pool.h"
-#include "pool_limits.h"
-#include "result_queue.h"
-#include "worker_pool.h"
+#include "core/auris_context.h"
+#include "transcribe/asr_backend.h"
+#include "core/auris_config.h"
+#include "platform/cpu_features.h"
+#include "transcribe/job_queue.h"
+#include "transcribe/onnx/onnx_backend.h"
+#include "transcribe/onnx/onnx_pool.h"
+#include "transcribe/pool_limits.h"
+#include "transcribe/result_queue.h"
+#include "transcribe/worker_pool.h"
 #include <cstdio>
 
 static whisper_context* g_ctx = nullptr;

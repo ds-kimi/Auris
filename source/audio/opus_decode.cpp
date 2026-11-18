@@ -1,7 +1,7 @@
 // Frame loop for one OP_CODEC_OPUSPLC chunk.
-#include "opus_stream.h"
-#include "opus_stream_state.h"
-#include "debug_log.h"
+#include "audio/opus_stream.h"
+#include "audio/opus_stream_state.h"
+#include "util/debug_log.h"
 
 // Concealing more than this is not loss recovery any more, it is inventing
 // speech: a jump that large means a new talk session or a reordered stream, and

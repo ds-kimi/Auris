@@ -1,6 +1,6 @@
 // Half the cores leaves the other half to the game tick and the OS; past four
 // workers the shared weights stop fitting in cache and throughput flattens.
-#include "pool_limits.h"
+#include "transcribe/pool_limits.h"
 #include <algorithm>
 #include <cctype>
 #include <thread>

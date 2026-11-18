@@ -1,6 +1,6 @@
 // Per-player audio accumulation buffer
-#include "audio_buffer.h"
-#include "capture_mode.h"
+#include "audio/audio_buffer.h"
+#include "core/capture_mode.h"
 
 // Decoded audio is always 16 kHz mono by the time it reaches here.
 static const int BUFFER_RATE = 16000;

@@ -1,6 +1,6 @@
 // Model file layout of each whitelisted sherpa-onnx model type
 #pragma once
-#include "auris_config.h"
+#include "core/auris_config.h"
 #include <string>
 
 // Owns the strings the sherpa-onnx config points into

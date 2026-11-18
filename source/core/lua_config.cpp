@@ -1,6 +1,6 @@
 // Lua bindings for auris config get/set
-#include "lua_bindings.h"
-#include "auris_config.h"
+#include "core/lua_bindings.h"
+#include "core/auris_config.h"
 
 using namespace GarrysMod::Lua;
 

@@ -1,6 +1,6 @@
 // sherpa-onnx offline recognizer (Moonshine, Parakeet, ...) shared by all workers
 #pragma once
-#include "auris_config.h"
+#include "core/auris_config.h"
 #include <string>
 #include <vector>
 

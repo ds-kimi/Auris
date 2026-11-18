@@ -1,5 +1,5 @@
 #ifdef _WIN32
-#include "cpu_topology.h"
+#include "platform/cpu_topology.h"
 #include <windows.h>
 
 // Masks are processor group 0 only: on a >64-CPU host another group reuses

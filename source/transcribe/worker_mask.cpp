@@ -1,7 +1,7 @@
 // Unlike gm_antiesp (whose workers want srcds' hot L3), whisper and ONNX
 // stream megabytes of weights per clip: sharing the game's L3 would evict
 // the tick's working set, so workers prefer another CCD when there is one.
-#include "worker_mask.h"
+#include "transcribe/worker_mask.h"
 
 static int CountBits(uint64_t mask) {
     int n = 0;

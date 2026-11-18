@@ -1,6 +1,6 @@
 // Transcribes one clip on one worker's private whisper_state
 #pragma once
-#include "auris_context.h"
+#include "core/auris_context.h"
 #include "whisper.h"
 
 // Everything one worker mutates; ctx is shared read-only between workers

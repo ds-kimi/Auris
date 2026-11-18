@@ -1,6 +1,6 @@
 // The module is built for AVX2+FMA+F16C; on an older CPU whisper.cpp dies with an
 // illegal-instruction crash that takes srcds down, so the local backend refuses to start instead.
-#include "cpu_features.h"
+#include "platform/cpu_features.h"
 
 #if defined(_MSC_VER)
 #include <intrin.h>

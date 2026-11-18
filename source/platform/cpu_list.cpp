@@ -1,6 +1,6 @@
 // Same list syntax as sysfs and taskset, so worker_cores reads like the
 // output of `lscpu` or the cache files the topology query parses
-#include "cpu_topology.h"
+#include "platform/cpu_topology.h"
 #include <cstdlib>
 
 uint64_t ParseCpuList(const char* list) {

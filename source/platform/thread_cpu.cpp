@@ -1,6 +1,6 @@
 // Wall time would charge a worker for the time srcds preempted it; thread
 // CPU time is what the server actually paid for a transcript.
-#include "thread_cpu.h"
+#include "platform/thread_cpu.h"
 #ifdef _WIN32
 #include <windows.h>
 #else

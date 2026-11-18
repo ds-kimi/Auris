@@ -1,5 +1,5 @@
 // Thread-safe auris config storage
-#include "auris_config.h"
+#include "core/auris_config.h"
 
 static std::mutex g_cfgMutex;
 static WhisperConfig g_config;

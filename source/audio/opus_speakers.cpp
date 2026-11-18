@@ -1,8 +1,8 @@
 // Per-speaker opus decoders, created on a speaker's first packet. Only the
 // voice hook (engine main thread) decodes, so the table needs no lock.
-#include "opus_stream.h"
-#include "opus_stream_state.h"
-#include "debug_log.h"
+#include "audio/opus_stream.h"
+#include "audio/opus_stream_state.h"
+#include "util/debug_log.h"
 
 #include <unordered_map>
 

@@ -1,9 +1,9 @@
 // The recognizer holds the ONNX sessions; ORT sessions are safe to Run from
 // several threads, so workers share it and only own their stream
-#include "onnx_backend.h"
+#include "transcribe/onnx/onnx_backend.h"
 #ifdef AURIS_WITH_ONNX
-#include "onnx_model_paths.h"
-#include "onnx_recognizer_config.h"
+#include "transcribe/onnx/onnx_model_paths.h"
+#include "transcribe/onnx/onnx_recognizer_config.h"
 #include "sherpa-onnx/c-api/c-api.h"
 #include <cstdio>
 

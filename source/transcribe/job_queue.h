@@ -1,6 +1,6 @@
 // Bounded FIFO of clips waiting for a transcription worker
 #pragma once
-#include "auris_context.h"
+#include "core/auris_context.h"
 #include <cstddef>
 
 // Pushes a job, then drops the oldest ones while more than maxSamples are queued

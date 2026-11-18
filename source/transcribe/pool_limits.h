@@ -1,6 +1,6 @@
 // Sizing of the transcription worker pool and its backlog
 #pragma once
-#include "auris_config.h"
+#include "core/auris_config.h"
 #include <cstddef>
 #include <string>
 

@@ -1,5 +1,5 @@
 // Capture fidelity flag, read from the voice detour thread and written from Lua.
-#include "capture_mode.h"
+#include "core/capture_mode.h"
 
 #include <atomic>
 
