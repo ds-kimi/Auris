@@ -35,6 +35,6 @@ net.Receive("auris_end_voice", function(_, ply)
     if Auris._config.openai_api_key ~= "" then
         Auris.SubmitRemote(ply)
     else
-        auris.Flush(ply:AccountID())
+        auris.Flush(Auris.VoiceKey(ply))
     end
 end)

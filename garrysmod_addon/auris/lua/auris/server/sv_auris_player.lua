@@ -32,3 +32,14 @@ end
 hook.Add("PlayerDisconnected", "Auris_CleanRateLimit", function(ply)
     _flushTimes[ply:SteamID64()] = nil
 end)
+
+-- Voice buffer key the C++ hook files this player's audio under: AccountID,
+-- or the negative entity index on sv_lan servers, where every client has
+-- SteamID64 "0" and AccountID() is -1.
+---@param ply Player
+---@return integer
+function Auris.VoiceKey(ply)
+    local account = ply:AccountID()
+    if isnumber(account) and account > 0 then return account end
+    return -ply:EntIndex()
+end

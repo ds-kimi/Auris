@@ -78,7 +78,9 @@ LUA_FUNCTION(Whisper_FlushRaw) {
     return 1;
 }
 
-// auris.Poll() -> sid64, text, audio_binary or nil
+// auris.Poll() -> sid64, text, audio_binary or nil, key
+// key is the voice buffer key: negative entity index for clients without a
+// SteamID (sv_lan), where sid64 is "0" for every one of them
 LUA_FUNCTION(Whisper_Poll) {
     // the poll timer runs on the main thread: the one place to see its core
     RefreshPlacement();
@@ -98,7 +100,8 @@ LUA_FUNCTION(Whisper_Poll) {
         LUA->PushString(reinterpret_cast<const char*>(audio.data()),
             audio.size() * sizeof(float));
     }
-    return 3;
+    LUA->PushNumber((double)result.key);
+    return 4;
 }
 
 // auris.Shutdown() -> nil

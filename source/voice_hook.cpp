@@ -3,6 +3,7 @@
 #include "audio_buffer.h"
 #include "steam_voice.h"
 #include "debug_log.h"
+#include "voice_key.h"
 
 #include <GarrysMod/FactoryLoader.hpp>
 #include <GarrysMod/Symbol.hpp>
@@ -54,8 +55,8 @@ static uint64_t ExtractServerSteamID(IClient* cl) {
 
 static int g_packetCount = 0;
 
-static void IngestVoicePacket(uint64_t sid64, const char* data, int nBytes) {
-    if (nBytes <= (int)sizeof(uint64_t)) return;
+static void IngestVoicePacket(int key, uint64_t sid64, const char* data, int nBytes) {
+    if (key == 0 || nBytes <= (int)sizeof(uint64_t)) return;
 
     char buf[20 * 1024];
     if (nBytes > (int)sizeof(buf)) return;
@@ -65,13 +66,12 @@ static void IngestVoicePacket(uint64_t sid64, const char* data, int nBytes) {
                 data + sizeof(uint64_t),
                 nBytes - sizeof(uint64_t));
 
-    int key = (int)(uint32_t)sid64;
     {
         std::lock_guard<std::mutex> lock(g_steamidMutex);
         g_keyToSteamid[key] = sid64;
     }
 
-    auto pcm = DecodeSteamVoice((const uint8_t*)buf, nBytes);
+    auto pcm = DecodeSteamVoice(key, (const uint8_t*)buf, nBytes);
 
     g_packetCount++;
     if (g_packetCount <= 5) {
@@ -87,7 +87,8 @@ static void IngestVoicePacket(uint64_t sid64, const char* data, int nBytes) {
 
 static void hook_BroadcastVoiceData(IClient* cl, int nBytes, char* data, int64 xuid) {
     if (cl && nBytes > (int)sizeof(uint64_t)) {
-        IngestVoicePacket(ExtractServerSteamID(cl), data, nBytes);
+        uint64_t sid64 = ExtractServerSteamID(cl);
+        IngestVoicePacket(VoiceKeyFor(cl, sid64), sid64, data, nBytes);
     }
     detour_BroadcastVoiceData.GetTrampoline<SV_BroadcastVoiceData>()(cl, nBytes, data, xuid);
 }
