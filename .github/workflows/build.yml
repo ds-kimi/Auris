@@ -72,7 +72,17 @@ jobs:
             [System.IO.File]::WriteAllText($f, $content)
           }
 
+      - name: Cache Vulkan shaders
+        id: shaders
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/whisper.cpp/ggml/src/ggml-vulkan/ggml-vulkan-shaders.cpp
+            vendor/whisper.cpp/ggml/src/ggml-vulkan/ggml-vulkan-shaders.hpp
+          key: vk-shaders-${{ runner.os }}-${{ hashFiles('vendor/whisper.cpp/ggml/src/ggml-vulkan/vulkan-shaders/**') }}
+
       - name: Compile Vulkan shaders
+        if: steps.shaders.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
@@ -150,8 +160,16 @@ jobs:
           install_runtime: true
           cache: true
 
-      - name: Fetch sherpa-onnx (64-bit ONNX backend)
-        shell: pwsh
+      - name: Cache sherpa-onnx
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/sherpa-onnx/include
+            vendor/sherpa-onnx/win-x64
+            vendor/sherpa-onnx/linux-x64
+          key: sherpa-onnx-${{ runner.os }}-${{ hashFiles('tools/setup/fetch_sherpa_onnx.*') }}
+
+        shell: pwsh
         run: ./tools/setup/fetch_sherpa_onnx.ps1
 
       - name: Download premake5
@@ -173,7 +191,17 @@ jobs:
             [System.IO.File]::WriteAllText($f, $content)
           }
 
+      - name: Cache Vulkan shaders
+        id: shaders
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/whisper.cpp/ggml/src/ggml-vulkan/ggml-vulkan-shaders.cpp
+            vendor/whisper.cpp/ggml/src/ggml-vulkan/ggml-vulkan-shaders.hpp
+          key: vk-shaders-${{ runner.os }}-${{ hashFiles('vendor/whisper.cpp/ggml/src/ggml-vulkan/vulkan-shaders/**') }}
+
       - name: Compile Vulkan shaders
+        if: steps.shaders.outputs.cache-hit != 'true'
         shell: cmd
         run: |
           call "C:\Program Files\Microsoft Visual Studio\2022\Enterprise\VC\Auxiliary\Build\vcvars64.bat"
@@ -280,7 +308,17 @@ jobs:
           sed -i 's/#ifdef __BMI2__/#if defined(__BMI2__) \&\& defined(__x86_64__)/g' \
             vendor/whisper.cpp/ggml/src/ggml-cpu/arch/x86/quants.c
 
+      - name: Cache Vulkan shaders
+        id: shaders
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/whisper.cpp/ggml/src/ggml-vulkan/ggml-vulkan-shaders.cpp
+            vendor/whisper.cpp/ggml/src/ggml-vulkan/ggml-vulkan-shaders.hpp
+          key: vk-shaders-${{ runner.os }}-${{ hashFiles('vendor/whisper.cpp/ggml/src/ggml-vulkan/vulkan-shaders/**') }}
+
       - name: Compile Vulkan shaders
+        if: steps.shaders.outputs.cache-hit != 'true'
         run: |
           set -e
           VENDOR_WHISPER_DIR="$PWD/vendor/whisper.cpp"
@@ -310,11 +348,16 @@ jobs:
           cat "$CPP_DIR"/*.cpp > "$OUT_CPP"
           rm -rf "$SPV_DIR" "$CPP_DIR" "$GEN_EXE"
 
-      - name: Generate Makefiles (x86)
-        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --with-vulkan gmake2
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}
+          max-size: 500M
+
+        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --with-vulkan gmake2
 
       - name: Build (Release x86)
-        run: make -C projects/linux/gmake2 config=release_x86 -j$(nproc)
+        run: make -C projects/linux/gmake2 config=release_x86 -j$(nproc) CC="ccache gcc" CXX="ccache g++"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -365,8 +408,16 @@ jobs:
           sudo cp -rf /tmp/vkh/include/vk_video/* /usr/include/vk_video/ 2>/dev/null || true
           sudo cp -rf /tmp/vkhpp/vulkan/* /usr/include/vulkan/
 
-      - name: Fetch sherpa-onnx (64-bit ONNX backend)
-        run: bash tools/setup/fetch_sherpa_onnx.sh
+      - name: Cache sherpa-onnx
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/sherpa-onnx/include
+            vendor/sherpa-onnx/win-x64
+            vendor/sherpa-onnx/linux-x64
+          key: sherpa-onnx-${{ runner.os }}-${{ hashFiles('tools/setup/fetch_sherpa_onnx.*') }}
+
+        run: bash tools/setup/fetch_sherpa_onnx.sh
 
       - name: Download premake5
         run: |
@@ -381,7 +432,17 @@ jobs:
           sed -i 's|VkPhysicalDeviceProperties2 props = vkdev\.getProperties2();|vk::PhysicalDeviceProperties2 props = vkdev.getProperties2();|' "$f"
           grep -q 'vk::PhysicalDeviceProperties2 props = vkdev.getProperties2' "$f"
 
+      - name: Cache Vulkan shaders
+        id: shaders
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/whisper.cpp/ggml/src/ggml-vulkan/ggml-vulkan-shaders.cpp
+            vendor/whisper.cpp/ggml/src/ggml-vulkan/ggml-vulkan-shaders.hpp
+          key: vk-shaders-${{ runner.os }}-${{ hashFiles('vendor/whisper.cpp/ggml/src/ggml-vulkan/vulkan-shaders/**') }}
+
       - name: Compile Vulkan shaders
+        if: steps.shaders.outputs.cache-hit != 'true'
         run: |
           set -e
           VENDOR_WHISPER_DIR="$PWD/vendor/whisper.cpp"
@@ -411,11 +472,16 @@ jobs:
           cat "$CPP_DIR"/*.cpp > "$OUT_CPP"
           rm -rf "$SPV_DIR" "$CPP_DIR" "$GEN_EXE"
 
-      - name: Generate Makefiles (x86_64)
-        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --generator-version=3 --with-vulkan gmake2
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}
+          max-size: 500M
+
+        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --generator-version=3 --with-vulkan gmake2
 
       - name: Build (Release x86_64)
-        run: make -C projects/linux/gmake2 config=release_x86_64 -j$(nproc)
+        run: make -C projects/linux/gmake2 config=release_x86_64 -j$(nproc) CC="ccache gcc" CXX="ccache g++"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -478,8 +544,16 @@ jobs:
           git checkout -B x86-64-support-sourcesdk FETCH_HEAD
           git submodule update --init --recursive
 
-      - name: Fetch sherpa-onnx (64-bit ONNX backend)
-        shell: pwsh
+      - name: Cache sherpa-onnx
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/sherpa-onnx/include
+            vendor/sherpa-onnx/win-x64
+            vendor/sherpa-onnx/linux-x64
+          key: sherpa-onnx-${{ runner.os }}-${{ hashFiles('tools/setup/fetch_sherpa_onnx.*') }}
+
+        shell: pwsh
         run: ./tools/setup/fetch_sherpa_onnx.ps1
 
       - name: Download premake5
@@ -535,11 +609,16 @@ jobs:
           sed -i 's/#ifdef __BMI2__/#if defined(__BMI2__) \&\& defined(__x86_64__)/g' \
             vendor/whisper.cpp/ggml/src/ggml-cpu/arch/x86/quants.c
 
-      - name: Generate Makefiles (x86)
-        run: ./premake5 --os=linux --gmcommon=./garrysmod_common gmake2
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}
+          max-size: 500M
+
+        run: ./premake5 --os=linux --gmcommon=./garrysmod_common gmake2
 
       - name: Build (Release x86)
-        run: make -C projects/linux/gmake2 config=release_x86 -j$(nproc)
+        run: make -C projects/linux/gmake2 config=release_x86 -j$(nproc) CC="ccache gcc" CXX="ccache g++"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
@@ -566,8 +645,16 @@ jobs:
           git checkout -B x86-64-support-sourcesdk FETCH_HEAD
           git submodule update --init --recursive
 
-      - name: Fetch sherpa-onnx (64-bit ONNX backend)
-        run: bash tools/setup/fetch_sherpa_onnx.sh
+      - name: Cache sherpa-onnx
+        uses: actions/cache@v4
+        with:
+          path: |
+            vendor/sherpa-onnx/include
+            vendor/sherpa-onnx/win-x64
+            vendor/sherpa-onnx/linux-x64
+          key: sherpa-onnx-${{ runner.os }}-${{ hashFiles('tools/setup/fetch_sherpa_onnx.*') }}
+
+        run: bash tools/setup/fetch_sherpa_onnx.sh
 
       - name: Download premake5
         run: |
@@ -576,11 +663,16 @@ jobs:
           chmod +x premake5
           echo "${{ github.workspace }}" >> $GITHUB_PATH
 
-      - name: Generate Makefiles (x86_64)
-        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --generator-version=3 gmake2
+      - name: Set up ccache
+        uses: hendrikmuhs/ccache-action@v1.2
+        with:
+          key: ${{ github.job }}
+          max-size: 500M
+
+        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --generator-version=3 gmake2
 
       - name: Build (Release x86_64)
-        run: make -C projects/linux/gmake2 config=release_x86_64 -j$(nproc)
+        run: make -C projects/linux/gmake2 config=release_x86_64 -j$(nproc) CC="ccache gcc" CXX="ccache g++"
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4

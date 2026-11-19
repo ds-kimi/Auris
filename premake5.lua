@@ -104,16 +104,19 @@ local function AddOnnx()
 		libdirs({path.getabsolute("vendor/sherpa-onnx/win-x64/lib")})
 	filter({"platforms:x86_64", "system:linux"})
 		libdirs({path.getabsolute("vendor/sherpa-onnx/linux-x64/lib")})
+		-- pre-C++11 std::string ABI is set workspace-wide (see CreateWorkspace)
 		links({"dl", "pthread"})
-		-- the prebuilt libs come from RHEL devtoolset (pre-C++11 std::string ABI);
-		-- header-only templates such as std::regex then exist in both ABIs under one
-		-- symbol, and the linker's pick crashes ORT at start-up unless we match it
-		defines({"_GLIBCXX_USE_CXX11_ABI=0"})
 	filter({})
 end
 
 local module_name = WITH_VULKAN and "auris-gpu" or "auris"
 CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" .. os.target() .. "/" .. _ACTION})
+	-- the sherpa-onnx prebuilt libs force the pre-C++11 std::string ABI; every
+	-- project of the workspace (garrysmod_common helpers included) must match or
+	-- std::string symbols such as ModuleLoader::LoadModule fail to link
+	filter({"platforms:x86_64", "system:linux"})
+		defines({"_GLIBCXX_USE_CXX11_ABI=0"})
+	filter({})
 	CreateProject({serverside = true, source_path = "source", manual_files = false})
 		-- garrysmod_common only globs the top folder; sources live in subsystem folders
 		files({"source/**.h", "source/**.cpp"})
