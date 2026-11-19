@@ -169,7 +169,8 @@ jobs:
             vendor/sherpa-onnx/linux-x64
           key: sherpa-onnx-${{ runner.os }}-${{ hashFiles('tools/setup/fetch_sherpa_onnx.*') }}
 
-        shell: pwsh
+      - name: Fetch sherpa-onnx (64-bit ONNX backend)
+        shell: pwsh
         run: ./tools/setup/fetch_sherpa_onnx.ps1
 
       - name: Download premake5
@@ -354,7 +355,8 @@ jobs:
           key: ${{ github.job }}
           max-size: 500M
 
-        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --with-vulkan gmake2
+      - name: Generate Makefiles (x86)
+        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --with-vulkan gmake2
 
       - name: Build (Release x86)
         run: make -C projects/linux/gmake2 config=release_x86 -j$(nproc) CC="ccache gcc" CXX="ccache g++"
@@ -417,7 +419,8 @@ jobs:
             vendor/sherpa-onnx/linux-x64
           key: sherpa-onnx-${{ runner.os }}-${{ hashFiles('tools/setup/fetch_sherpa_onnx.*') }}
 
-        run: bash tools/setup/fetch_sherpa_onnx.sh
+      - name: Fetch sherpa-onnx (64-bit ONNX backend)
+        run: bash tools/setup/fetch_sherpa_onnx.sh
 
       - name: Download premake5
         run: |
@@ -478,7 +481,8 @@ jobs:
           key: ${{ github.job }}
           max-size: 500M
 
-        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --generator-version=3 --with-vulkan gmake2
+      - name: Generate Makefiles (x86_64)
+        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --generator-version=3 --with-vulkan gmake2
 
       - name: Build (Release x86_64)
         run: make -C projects/linux/gmake2 config=release_x86_64 -j$(nproc) CC="ccache gcc" CXX="ccache g++"
@@ -553,7 +557,8 @@ jobs:
             vendor/sherpa-onnx/linux-x64
           key: sherpa-onnx-${{ runner.os }}-${{ hashFiles('tools/setup/fetch_sherpa_onnx.*') }}
 
-        shell: pwsh
+      - name: Fetch sherpa-onnx (64-bit ONNX backend)
+        shell: pwsh
         run: ./tools/setup/fetch_sherpa_onnx.ps1
 
       - name: Download premake5
@@ -615,7 +620,8 @@ jobs:
           key: ${{ github.job }}
           max-size: 500M
 
-        run: ./premake5 --os=linux --gmcommon=./garrysmod_common gmake2
+      - name: Generate Makefiles (x86)
+        run: ./premake5 --os=linux --gmcommon=./garrysmod_common gmake2
 
       - name: Build (Release x86)
         run: make -C projects/linux/gmake2 config=release_x86 -j$(nproc) CC="ccache gcc" CXX="ccache g++"
@@ -654,7 +660,8 @@ jobs:
             vendor/sherpa-onnx/linux-x64
           key: sherpa-onnx-${{ runner.os }}-${{ hashFiles('tools/setup/fetch_sherpa_onnx.*') }}
 
-        run: bash tools/setup/fetch_sherpa_onnx.sh
+      - name: Fetch sherpa-onnx (64-bit ONNX backend)
+        run: bash tools/setup/fetch_sherpa_onnx.sh
 
       - name: Download premake5
         run: |
@@ -669,7 +676,8 @@ jobs:
           key: ${{ github.job }}
           max-size: 500M
 
-        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --generator-version=3 gmake2
+      - name: Generate Makefiles (x86_64)
+        run: ./premake5 --os=linux --gmcommon=./garrysmod_common --generator-version=3 gmake2
 
       - name: Build (Release x86_64)
         run: make -C projects/linux/gmake2 config=release_x86_64 -j$(nproc) CC="ccache gcc" CXX="ccache g++"
