@@ -40,7 +40,7 @@ jobs:
     name: Windows x86 (GPU)
     needs: check-version
     if: needs.check-version.outputs.changed == 'true'
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
         with:
@@ -129,7 +129,7 @@ jobs:
     name: Windows x86_64 (GPU)
     needs: check-version
     if: needs.check-version.outputs.changed == 'true'
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
         with:
@@ -149,6 +149,10 @@ jobs:
           vulkan_version: 1.4.309.0
           install_runtime: true
           cache: true
+
+      - name: Fetch sherpa-onnx (64-bit ONNX backend)
+        shell: pwsh
+        run: ./tools/setup/fetch_sherpa_onnx.ps1
 
       - name: Download premake5
         run: |
@@ -361,6 +365,9 @@ jobs:
           sudo cp -rf /tmp/vkh/include/vk_video/* /usr/include/vk_video/ 2>/dev/null || true
           sudo cp -rf /tmp/vkhpp/vulkan/* /usr/include/vulkan/
 
+      - name: Fetch sherpa-onnx (64-bit ONNX backend)
+        run: bash tools/setup/fetch_sherpa_onnx.sh
+
       - name: Download premake5
         run: |
           wget -q https://github.com/premake/premake-core/releases/download/v5.0.0-beta4/premake-5.0.0-beta4-linux.tar.gz
@@ -422,7 +429,7 @@ jobs:
     name: Windows x86 (CPU)
     needs: check-version
     if: needs.check-version.outputs.changed == 'true'
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
         with:
@@ -457,7 +464,7 @@ jobs:
     name: Windows x86_64 (CPU)
     needs: check-version
     if: needs.check-version.outputs.changed == 'true'
-    runs-on: windows-latest
+    runs-on: windows-2022
     steps:
       - uses: actions/checkout@v4
         with:
@@ -470,6 +477,10 @@ jobs:
           git fetch origin x86-64-support-sourcesdk
           git checkout -B x86-64-support-sourcesdk FETCH_HEAD
           git submodule update --init --recursive
+
+      - name: Fetch sherpa-onnx (64-bit ONNX backend)
+        shell: pwsh
+        run: ./tools/setup/fetch_sherpa_onnx.ps1
 
       - name: Download premake5
         run: |
@@ -554,6 +565,9 @@ jobs:
           git fetch origin x86-64-support-sourcesdk
           git checkout -B x86-64-support-sourcesdk FETCH_HEAD
           git submodule update --init --recursive
+
+      - name: Fetch sherpa-onnx (64-bit ONNX backend)
+        run: bash tools/setup/fetch_sherpa_onnx.sh
 
       - name: Download premake5
         run: |
