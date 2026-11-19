@@ -16,9 +16,11 @@ if ((Test-Path "$Dest\win-x64\lib\sherpa-onnx-c-api.lib") -and (Test-Path $Hdr))
 }
 New-Item -ItemType Directory -Force "$Dest\dl", "$Dest\win-x64", (Split-Path $Hdr) | Out-Null
 $TarPath = Join-Path (Join-Path $Dest "dl") $Tar
-curl.exe -fsSL -o $TarPath "https://github.com/k2-fsa/sherpa-onnx/releases/download/$Version/$Tar"
+curl.exe -fsSL -o $TarPath --max-time 600 "https://github.com/k2-fsa/sherpa-onnx/releases/download/$Version/$Tar"
 if ((Get-FileHash $TarPath -Algorithm SHA256).Hash -ne $LibSha.ToUpper()) { throw "sherpa-onnx archive SHA256 mismatch" }
-tar.exe -xjf $TarPath -C "$Dest\win-x64" --strip-components=1
+# System32 bsdtar: on CI runners Git's GNU tar comes first in PATH and reads
+# "C:\..." as a remote host, hanging on rsh
+& "$env:SystemRoot\System32\tar.exe" -xjf $TarPath -C "$Dest\win-x64" --strip-components=1
 curl.exe -fsSL -o $Hdr "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/$Version/sherpa-onnx/c-api/c-api.h"
 if ((Get-FileHash $Hdr -Algorithm SHA256).Hash -ne $HdrSha.ToUpper()) { throw "c-api.h SHA256 mismatch" }
 Write-Output "[sherpa-onnx] $Version ready"
