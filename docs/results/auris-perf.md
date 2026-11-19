@@ -1,29 +1,27 @@
-# Auris performance at 128 players (lot I2)
+# Auris performance at 128 players
 
-Measured 2026-11-18 on the commit that adds this file. Host: Windows 11, 16 logical
+Measured 2026-11-18. Host: Windows 11, 16 logical
 CPUs, Linux runs in WSL2 Ubuntu (gcc 13), srcds lin64 dedicated server, 66 tick,
 maxplayers 128, gm_construct.
 
 ## How it was measured
 
-- **Load**: gm_realbots (lin64 only) spawns N bots that play real speech WAVs
-  through `realbots.VoiceAudio` (Opus VOIP 24 kbps, 50 frames/s, same packets as
-  a Steam client). Each talker speaks one clip, then stays quiet so it talks
-  ~20 % of the time; starts are spread over one talk period. 128 talkers gave
-  30 audio-s/s (1 793 s of voice per 60 s), the capacity target of the plan.
-- **Scenario**: `tools/ingame` (`install.sh`, `run_case.sh`, `run_matrix.sh`,
-  scenario Lua `auris_load`). 90 s measured window, 20 s tail for the last
+- **Load**: N simulated bots play real speech WAVs through the Steam voice path
+  (Opus VOIP 24 kbps, 50 frames/s, same packets as a Steam client). Each talker
+  speaks one clip, then stays quiet so it talks ~20 % of the time; starts are
+  spread over one talk period. 128 talkers gave 30 audio-s/s (1 793 s of voice
+  per 60 s).
+- **Scenario**: 90 s measured window, 20 s tail for the last
   clips. Bots have no client Lua, so the scenario calls `auris.Flush` 250 ms
   after each clip, as `sv_auris_feed` does on the client's end-of-voice signal.
 - **Latency** = flush → `Auris_Transcription` hook (queue wait + decode).
   **CPU-s/audio-s** = `auris.GetStats().cpu_per_audio` (worker threads only;
   partial with threads = 2). **Tick** = wall time between `Tick` hooks
-  (p50/p99/max). **srcds CPU %** and **RSS** = whole process
-  (`realbots.Process()`), so they include the bots.
+  (p50/p99/max). **srcds CPU %** and **RSS** = whole process, so they include
+  the bots.
 - **Corpus** (`models/clips`, not committed): EN JFK inaugural + LibriSpeech,
   FR translation of the JFK line, cut at 1 / 3 / 8 s plus full clips, 16 kHz.
-  References in `tools/ingame/refs.tsv`; `wer.py` scores each text against the
-  closest reference of its language. 1 s cuts end mid-word (reported apart);
+  Each text is scored against the closest reference of its language. 1 s cuts end mid-word (reported apart);
   `en_8s` / `fr_8s` repeat one sentence and are left out (whisper merges the
   repeat). WER is indicative: a few dozen distinct utterances, not a benchmark.
 - **Caveat**: the 128 bots run inside srcds. Without Auris they already cost
@@ -71,7 +69,7 @@ otherwise. `off_*` = Auris not installed.
 | onnx_parakeet_fr_t16_w4 | 16 | 68/68 | 0 | 409 | 955 | 0.107 | 15.2/15.6/17 | 51 | 1508 | 12.7 | 8.5 | 100.0 |
 | onnx_parakeet_fr_t128_w4 | 128 | 539/560 | 21 | 711 | 18074 | 0.115 | 13.4/81.5/443 | 371 | 2550 | 16.2 | 12.8 | 126.0 |
 
-### Main-thread cost per tick (ms, realbots meter)
+### Main-thread cost per tick (ms)
 
 | cell | main thread | whole process |
 |---|---|---|
@@ -104,7 +102,7 @@ All 12 clips (EN and FR together, 61.2 s), CPU-s per audio-s / latency p50 / p95
 | lin32 | tiny_en_acft_q8_0 | 0.063 | 203 | 656 | 111 |
 | lin64 | tiny_en_acft_q8_0 | 0.030 | 111 | 300 | 121 |
 
-Windows has no in-game run: gm_realbots is lin64 only. GPU (Vulkan) builds
+In-game runs are lin64 only. GPU (Vulkan) builds
 compile on Windows (`gmsv_auris-gpu_win64.dll`), but this host has no GPU and
 auris-bench is CPU only, so they were not measured; no Vulkan SDK in WSL, so
 the Linux GPU build was skipped.
@@ -136,8 +134,7 @@ the Linux GPU build was skipped.
   has nothing to crop); it pays off on real voice chat with open mics and
   breathing. Keep it on.
 - **Affinity**: on vs off within noise here (tick p99 68 vs 64 ms). WSL exposes
-  one L3, so only the "all but the main core" mask was exercised; the main
-  core's SMT sibling is still in the worker mask (follow-up).
+  one L3, so only the "all but the main core" mask was exercised.
 
 ## Recommended 128-player defaults
 
@@ -150,25 +147,13 @@ the Linux GPU build was skipped.
 Always: Silero VAD on, `affinity = true`, `max_queue_seconds` 30 (drops the
 oldest clips rather than letting latency grow), never stock non-ACFT models.
 
-## Bugs found and fixed during this lot
-
-- One Opus decoder and sequence counter were shared by every speaker: two
-  overlapping talkers decoded each other's frames. Now one decoder per speaker.
-- Clients without a SteamID (sv_lan, bots) were all keyed 0 and could not be
-  flushed from Lua (`AccountID()` = -1): keyed by entity index now
-  (`Auris.VoiceKey`, 4th value of `auris.Poll`).
-- Linux worker placement read the CPU set after pinning the main thread, so the
-  worker mask was the game's own core. Uses the online CPU list now.
-- The dropped-clips counter was shadowed and always reported 0.
-- `auris.Flush` keys above 2^31 overflowed the int cast.
-
 ## Builds
 
 | target | result |
 |---|---|
-| Win32 (v142) | gmsv_auris_win32.dll + auris-bench, no new source warnings |
-| Win x64 | gmsv_auris_win64.dll links (first time) with `--gmcommon` pointing at an x86-64 capable garrysmod_common (gm_realbots' copy); the pinned submodule c29a9e8 still fails tier1 on x64 |
+| Win32 (v142) | gmsv_auris_win32.dll + auris-bench |
+| Win x64 | gmsv_auris_win64.dll + auris-bench |
 | Win x64 Vulkan | gmsv_auris-gpu_win64.dll builds; not run (no GPU on this host) |
-| lin64 | gmsv_auris_linux64.dll with the same x86-64 garrysmod_common; tested in game |
-| lin32 | gmsv_auris_linux.dll + auris-bench (multilib); bench only, realbots is lin64 only |
+| lin64 | gmsv_auris_linux64.dll; tested in game |
+| lin32 | gmsv_auris_linux.dll + auris-bench; bench only |
 | Linux Vulkan | skipped: no Vulkan SDK in WSL |

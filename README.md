@@ -35,7 +35,7 @@ Watch Auris transcribe Garry's Mod voice chat in real time.
 ## Performance
 
 Auris keeps up with a full 128-player server on CPU only. Numbers below are from a real in-game
-run: srcds lin64 in WSL2 on a Ryzen 7 7800X3D (16 logical CPUs), 128 gm_realbots
+run: srcds lin64 in WSL2 on a Ryzen 7 7800X3D (16 logical CPUs), 128 simulated
 bots playing real speech through the Steam voice path, ~20 % talk time (~30 audio-seconds per second),
 4 workers, Silero VAD on. The bots run inside srcds, so tick and RSS figures are pessimistic.
 RSS is the whole srcds process, bots included. 128 talkers, corpus and method: [docs/results/auris-perf.md](docs/results/auris-perf.md).
