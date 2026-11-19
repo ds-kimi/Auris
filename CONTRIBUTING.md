@@ -23,3 +23,4 @@ Thanks for contributing to Auris.
 
 - Windows builds are generated via Premake.
 - See README for build and configuration details.
+- Sources live in subsystem folders under `source/`: `core/` (module entry, Lua bindings, config), `audio/` (Opus, Steam voice, buffers), `hook/` (voice detour), `transcribe/` (pool, queue, workers, whisper params), `transcribe/onnx/` (ONNX backend), `vad/` (Silero gate), `platform/` (CPU topology, thread placement), `util/` (debug log). Includes are relative to `source/`, for example `#include "core/auris_config.h"`. New files are picked up by premake automatically.

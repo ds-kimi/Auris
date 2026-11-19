@@ -115,6 +115,8 @@ end
 local module_name = WITH_VULKAN and "auris-gpu" or "auris"
 CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" .. os.target() .. "/" .. _ACTION})
 	CreateProject({serverside = true, source_path = "source", manual_files = false})
+		-- garrysmod_common only globs the top folder; sources live in subsystem folders
+		files({"source/**.h", "source/**.cpp"})
 		warnings("Default")
 		IncludeSDKCommon()
 		IncludeSDKTier0()
@@ -190,16 +192,16 @@ CreateWorkspace({name = module_name, abi_compatible = false, path = "projects/" 
 		files({
 			"tools/bench/*.cpp",
 			"tools/bench/*.h",
-			"source/auris_config.cpp",
-			"source/debug_log.cpp",
-			"source/job_limits.cpp",
-			"source/pool_limits.cpp",
-			"source/silero_gate.cpp",
-			"source/whisper_params.cpp",
-			"source/onnx_backend.cpp",
-			"source/onnx_model_paths.cpp",
-			"source/onnx_file_find.cpp",
-			"source/onnx_recognizer_config.cpp",
+			"source/core/auris_config.cpp",
+			"source/util/debug_log.cpp",
+			"source/transcribe/job_limits.cpp",
+			"source/transcribe/pool_limits.cpp",
+			"source/vad/silero_gate.cpp",
+			"source/transcribe/whisper_params.cpp",
+			"source/transcribe/onnx/onnx_backend.cpp",
+			"source/transcribe/onnx/onnx_model_paths.cpp",
+			"source/transcribe/onnx/onnx_file_find.cpp",
+			"source/transcribe/onnx/onnx_recognizer_config.cpp",
 		})
 		AddWhisperCore()
 		AddOnnx()

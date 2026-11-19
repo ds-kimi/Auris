@@ -1,8 +1,8 @@
 #include "bench_run.h"
 #include "bench_stats.h"
-#include "pool_limits.h"
-#include "silero_gate.h"
-#include "whisper_params.h"
+#include "transcribe/pool_limits.h"
+#include "vad/silero_gate.h"
+#include "transcribe/whisper_params.h"
 #include <atomic>
 #include <chrono>
 #include <thread>
