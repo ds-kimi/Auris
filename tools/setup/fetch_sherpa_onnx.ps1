@@ -16,11 +16,16 @@ if ((Test-Path "$Dest\win-x64\lib\sherpa-onnx-c-api.lib") -and (Test-Path $Hdr))
 }
 New-Item -ItemType Directory -Force "$Dest\dl", "$Dest\win-x64", (Split-Path $Hdr) | Out-Null
 $TarPath = Join-Path (Join-Path $Dest "dl") $Tar
+Write-Output "[sherpa-onnx] downloading $Tar"
 curl.exe -fsSL -o $TarPath --max-time 600 "https://github.com/k2-fsa/sherpa-onnx/releases/download/$Version/$Tar"
 if ((Get-FileHash $TarPath -Algorithm SHA256).Hash -ne $LibSha.ToUpper()) { throw "sherpa-onnx archive SHA256 mismatch" }
-# System32 bsdtar: on CI runners Git's GNU tar comes first in PATH and reads
-# "C:\..." as a remote host, hanging on rsh
-& "$env:SystemRoot\System32\tar.exe" -xjf $TarPath -C "$Dest\win-x64" --strip-components=1
-curl.exe -fsSL -o $Hdr "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/$Version/sherpa-onnx/c-api/c-api.h"
+Write-Output "[sherpa-onnx] extracting"
+# Python tarfile: Git's GNU tar reads "C:\..." as a remote host, and the
+# Server 2022 bsdtar hands bzip2 to an external program; both hang on CI
+$Py = "import sys, tarfile`nwith tarfile.open(sys.argv[1], 'r:bz2') as t:`n    for m in t.getmembers():`n        p = m.name.split('/', 1)`n        if len(p) == 2 and p[1]:`n            m.name = p[1]`n            t.extract(m, sys.argv[2], filter='data')"
+python -I -c $Py $TarPath "$Dest\win-x64"
+if ($LASTEXITCODE -ne 0) { throw "sherpa-onnx extraction failed" }
+Write-Output "[sherpa-onnx] fetching c-api.h"
+curl.exe -fsSL -o $Hdr --max-time 120 "https://raw.githubusercontent.com/k2-fsa/sherpa-onnx/$Version/sherpa-onnx/c-api/c-api.h"
 if ((Get-FileHash $Hdr -Algorithm SHA256).Hash -ne $HdrSha.ToUpper()) { throw "c-api.h SHA256 mismatch" }
 Write-Output "[sherpa-onnx] $Version ready"

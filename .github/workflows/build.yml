@@ -171,6 +171,7 @@ jobs:
 
       - name: Fetch sherpa-onnx (64-bit ONNX backend)
         shell: pwsh
+        timeout-minutes: 15
         run: ./tools/setup/fetch_sherpa_onnx.ps1
 
       - name: Download premake5
@@ -559,6 +560,7 @@ jobs:
 
       - name: Fetch sherpa-onnx (64-bit ONNX backend)
         shell: pwsh
+        timeout-minutes: 15
         run: ./tools/setup/fetch_sherpa_onnx.ps1
 
       - name: Download premake5
