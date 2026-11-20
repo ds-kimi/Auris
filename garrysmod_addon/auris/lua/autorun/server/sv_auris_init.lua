@@ -39,9 +39,3 @@ include("auris/server/sv_auris_feed.lua")
 
 include("auris/server/sv_auris_poll.lua")
 Auris.StartPollLoop()
-
--- C++ module tears down between maps; clear sentinel so Boot() re-runs Init().
--- lua_refresh does NOT fire this hook, so the sentinel persists across refreshes.
-hook.Add("PostCleanupMap", "Auris_ResetInitSentinel", function()
-    _G.__AurisInitDone = nil
-end)

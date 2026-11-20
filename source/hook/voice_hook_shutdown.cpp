@@ -4,8 +4,10 @@
 #include <cstdio>
 
 void UninstallVoiceHook() {
-    detour_BroadcastVoiceData.Disable();
-    detour_BroadcastVoiceData.Destroy();
+    if (detour_BroadcastVoiceData.IsValid()) {
+        detour_BroadcastVoiceData.Disable();
+        detour_BroadcastVoiceData.Destroy();
+    }
 
     std::lock_guard<std::mutex> lock(g_steamidMutex);
     g_keyToSteamid.clear();

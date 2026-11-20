@@ -94,6 +94,9 @@ static void hook_BroadcastVoiceData(IClient* cl, int nBytes, char* data, int64 x
 }
 
 bool InstallVoiceHook() {
+    // Creating the detour twice without a Destroy crashes inside Detouring::Hook
+    if (detour_BroadcastVoiceData.IsValid()) return true;
+
     SourceSDK::ModuleLoader engine_loader("engine");
     SymbolFinder symfinder;
     void* sv_bcast = nullptr;
